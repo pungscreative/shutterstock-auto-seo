@@ -43,19 +43,17 @@ with col2:
         if st.button("Generate SEO Metadata & CSV"):
             with st.spinner("✨ Menghubungkan ke Gemini 3.5 Flash..."):
                 try:
-                    # Inisialisasi klien
                     client = genai.Client(api_key=api_key.strip())
-                    
                     img = Image.open(uploaded_file)
                     
-                    # Prompt diperbarui: Deskripsi dibatasi secara ketat
+                    # Prompt dengan penegasan batas kata kunci
                     prompt = """
                     Act as a professional Shutterstock contributor. 
                     Analyze the image and provide metadata in English:
                     TITLE: [A concise, commercial search-friendly title]
-                    KEYWORDS: [50 relevant comma-separated keywords]
+                    KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords. DO NOT EXCEED 50.]
                     CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A commercial description, MAXIMUM 150 characters]
+                    DESCRIPTION: [A detailed commercial description, minimum 6 words]
                     """
                     
                     response = client.models.generate_content(
@@ -70,28 +68,42 @@ with col2:
                             key, val = line.split(':', 1)
                             data_dict[key.strip()] = val.strip()
                             
-                    # Pengaman Karakter: Memastikan deskripsi tidak melebihi 190 karakter
+                    # 1. PENGAMAN DESKRIPSI (Min 5 kata)
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
-                    if len(desc) > 190:
-                        desc = desc[:187] + "..."
+                    if len(desc.split()) < 5:
+                        desc += " high quality premium stock photography"
+                        
+                    # 2. PENGAMAN KATA KUNCI MUTLAK (Maksimal 50 kata)
+                    raw_keywords = data_dict.get('KEYWORDS', '')
+                    # Pecah berdasarkan koma, bersihkan spasi
+                    keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
+                    # Paksa potong hanya ambil 50 kata pertama jika AI membandel
+                    keyword_list = keyword_list[:50]
+                    final_keywords = ','.join(keyword_list)
                     
-                    # Templat Tabel SANGAT KETAT sesuai syarat Shutterstock
+                    # 3. PEMBENTUKAN CSV SESUAI STANDAR SHUTTERSTOCK
+                    # Header harus persis sama dengan aturan impor CSV Shutterstock
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [desc],
-                        "Keywords": [data_dict.get('KEYWORDS', '')],
-                        "Categories": [data_dict.get('CATEGORY', 'Nature')],
+                        "Keywords": [final_keywords],
+                        "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
                         "Illustration": ["No"],
                         "Mature Content": ["No"],
                         "Editorial": ["No"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate dengan Format Ketat Shutterstock!")
+                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
                     csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
+                    st.download_button(
+                        label="📥 Download File CSV Shutterstock", 
+                        data=csv, 
+                        file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", 
+                        mime="text/csv"
+                    )
                 
                 except Exception as e:
                     st.error(f"Terjadi kesalahan sistem: {e}")
