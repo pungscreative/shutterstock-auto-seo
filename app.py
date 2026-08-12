@@ -42,9 +42,9 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Menghubungkan ke Interactions API terbaru..."):
+            with st.spinner("✨ Menggunakan Interactions API terbaru..."):
                 try:
-                    # Inisialisasi menggunakan Client SDK baru (google-genai)
+                    # Inisialisasi Google GenAI Client
                     client = genai.Client(api_key=api_key)
                     
                     img = Image.open(uploaded_file)
@@ -57,7 +57,8 @@ with col2:
                     DESCRIPTION: [A detailed commercial description]
                     """
                     
-                    # Menggunakan string model standar di SDK baru
+                    # Menggunakan string model default kosong atau gemini-2.5-flash lewat interaksi standar
+                    # Berdasarkan dokumentasi migrasi Interactions API, kita gunakan client.chats atau client.models langsung
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=[prompt, img]
@@ -89,7 +90,35 @@ with col2:
                     st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
                 
                 except Exception as e:
-                    st.error(f"Terjadi kesalahan sistem: {e}")
+                    # Jika model 2.5-flash diblokir spesifik, kita sediakan mekanisme penanganan otomatis langsung dari error handler
+                    try:
+                        # Fallback otomatis ke model tanpa spesifikasi versi jika didukung client
+                        response = client.models.generate_content(
+                            model='gemini-flash',
+                            contents=[prompt, img]
+                        )
+                        # Parsing ulang jika fallback sukses
+                        data_dict = {}
+                        for line in response.text.split('\n'):
+                            if ':' in line:
+                                key, val = line.split(':', 1)
+                                data_dict[key.strip()] = val.strip()
+                                
+                        df = pd.DataFrame({
+                            "Filename": [uploaded_file.name],
+                            "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
+                            "Keywords": [data_dict.get('KEYWORDS', '')],
+                            "Categories": [data_dict.get('CATEGORY', 'Nature')],
+                            "Editorial": [0],
+                            "Date Created": [datetime.now().strftime("%Y-%m-%d")],
+                            "Location": ["Mataram"]
+                        })
+                        st.success("✅ Metadata & CSV Berhasil Digenerate (Fallback Mode)!")
+                        st.dataframe(df)
+                        csv = df.to_csv(index=False).encode('utf-8')
+                        st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
+                    except Exception as inner_e:
+                        st.error(f"Terjadi kesalahan sistem: {inner_e}")
     else:
         st.info("Silakan masukkan API Key dan upload foto di sebelah kiri untuk memulai.")
     st.markdown('</div>', unsafe_allow_html=True)
