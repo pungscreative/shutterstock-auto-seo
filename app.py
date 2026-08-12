@@ -1,34 +1,30 @@
 import streamlit as st
-import base64
-from openai import OpenAI
 from PIL import Image
+import google.generativeai as genai
 
-st.set_page_config(page_title="Shutterstock Auto SEO", page_icon="📸", layout="centered")
+st.set_page_config(page_title="Shutterstock Auto SEO (Free)", page_icon="📸", layout="centered")
 
-st.title("📸 Shutterstock Auto-SEO & Reviewer")
-st.markdown("Upload foto Anda dari device mana saja. AI akan mereview nilai komersialnya dan membuat **Judul**, **Deskripsi**, serta **50 Keyword** optimal untuk Shutterstock.")
+st.title("📸 Shutterstock Auto-SEO & Reviewer (Gratis)")
+st.markdown("Upload foto Anda dari device mana saja. AI (Google Gemini) akan mereview nilai komersialnya dan membuat **Judul**, **Deskripsi**, serta **50 Keyword** optimal untuk Shutterstock.")
 
-st.info("Aplikasi ini menggunakan OpenAI Vision AI. Masukkan API Key Anda di bawah ini (Aman, tidak disimpan di server).")
-api_key = st.text_input("OpenAI API Key:", type="password")
+st.info("Aplikasi ini menggunakan Google Gemini API (100% Gratis & Tanpa Kartu Kredit). Masukkan Gemini API Key Anda di bawah.")
+api_key = st.text_input("Google Gemini API Key:", type="password")
 
 uploaded_file = st.file_uploader("Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # PERBAIKAN: Membaca gambar dengan library PIL (Pillow)
     image = Image.open(uploaded_file)
     st.image(image, caption="Preview Foto", use_container_width=True)
 
     if st.button("Automasi Data SEO Shutterstock"):
         if not api_key:
-            st.error("⚠️ Silakan masukkan API Key OpenAI terlebih dahulu.")
+            st.error("⚠️ Silakan masukkan API Key Gemini terlebih dahulu.")
         else:
             with st.spinner("🤖 AI sedang menganalisis foto, mencari tren pasar, dan menyusun keyword..."):
                 try:
-                    client = OpenAI(api_key=api_key)
-                    
-                    # Reset pointer file gambar setelah dibaca oleh PIL
-                    uploaded_file.seek(0)
-                    base64_image = base64.b64encode(uploaded_file.getvalue()).decode("utf-8")
+                    # Konfigurasi API Gemini
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel('gemini-2.5-flash')
                     
                     prompt = """
                     Act as a Shutterstock Microstock Expert. Analyze this image and provide data to maximize downloads.
@@ -48,28 +44,10 @@ if uploaded_file is not None:
                     Provide 2 best matching Shutterstock categories.
                     """
                     
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {
-                                "role": "user",
-                                "content": [
-                                    {"type": "text", "text": prompt},
-                                    {
-                                        "type": "image_url",
-                                        "image_url": {
-                                            "url": f"data:image/jpeg;base64,{base64_image}"
-                                        },
-                                    },
-                                ],
-                            }
-                        ],
-                        max_tokens=1000,
-                    )
+                    response = model.generate_content([prompt, image])
                     
-                    result = response.choices[0].message.content
                     st.success("✅ Data SEO Berhasil Dibuat! Silakan copy data di bawah ke Shutterstock.")
-                    st.markdown(result)
+                    st.markdown(response.text)
                     
                 except Exception as e:
                     st.error(f"Terjadi kesalahan: {e}")
