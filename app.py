@@ -25,7 +25,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("✨ Shutterstock Pro Studio")
+st.title("✨ Nyetok.Kuy")
 
 col1, col2 = st.columns([1, 1.5])
 
