@@ -42,7 +42,7 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Menghubungkan ke Google GenAI SDK..."):
+            with st.spinner("✨ Menghubungkan ke Gemini 3.5 Flash..."):
                 try:
                     # Inisialisasi klien resmi google-genai
                     client = genai.Client(api_key=api_key.strip())
@@ -57,9 +57,9 @@ with col2:
                     DESCRIPTION: [A detailed commercial description]
                     """
                     
-                    # Menggunakan model standar yang diizinkan untuk semua akun (gemini-1.5-flash)
+                    # Titah Baginda: Menggunakan gemini-3.5-flash
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-3.5-flash',
                         contents=[prompt, img]
                     )
                     
@@ -81,7 +81,7 @@ with col2:
                         "Location": ["Mataram"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
+                    st.success("✅ Metadata & CSV Berhasil Digenerate dengan Gemini 3.5 Flash!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
