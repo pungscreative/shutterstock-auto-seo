@@ -7,7 +7,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Pekat
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Terisi Penuh
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -75,12 +75,12 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Efek Kaca Transparan Pekat yang Membungkus Seluruh Konten di Kolom Kanan */
-    [data-testid="stVerticalBlockBorderWrapper"] {
+    /* Efek Kaca Transparan Terisi Penuh yang Membungkus Seluruh Konten di Kolom Kanan */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: rgba(255, 255, 255, 0.07) !important;
         background: rgba(255, 255, 255, 0.07) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 16px !important;
+        border-radius: 15px !important;
         padding: 15px !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
@@ -159,7 +159,7 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    # Kontainer Pembungkus Kaca Transparan yang Utuh dan Pekat
+    # Kontainer Pembungkus Kaca Transparan yang Utuh dan Terisi Penuh
     with st.container(border=True):
         if uploaded_file and api_key:
             if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
