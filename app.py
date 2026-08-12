@@ -9,17 +9,17 @@ st.set_page_config(page_title="Nyetok.Kuy", page_icon="✨", layout="wide")
 st.markdown("""
 <style>
     .stApp { 
-        background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%), 
-                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
+        background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c084fc 100%); 
         color: #f8fafc; 
     }
     .glass-card { 
-        background: rgba(255, 255, 255, 0.03); 
+        background: rgba(255, 255, 255, 0.08); 
         backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.08); 
+        border: 1px solid rgba(255, 255, 255, 0.2); 
         border-radius: 24px; 
-        padding: 30px; 
+        padding: 25px; 
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+        margin-bottom: 20px;
     }
     .stButton>button { width: 100%; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; border: none; }
 </style>
@@ -30,8 +30,13 @@ st.title("✨ Nyetok.Kuy")
 col1, col2 = st.columns([1, 1.5])
 
 with col1:
+    # Kotak Transparan 1: Khusus API Key
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     api_key = st.text_input("Masukkan API Key (AQ...):", type="password", placeholder="Paste API Key di sini...")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Kotak Transparan 2: Khusus Upload Foto
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         st.image(uploaded_file, use_container_width=True)
