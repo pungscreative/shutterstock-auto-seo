@@ -6,91 +6,125 @@ import io
 
 # Konfigurasi Halaman & Tema Estetik
 st.set_page_config(
-    page_title="Shutterstock Pro Studio", 
+    page_title="Shutterstock Pro Studio | AI Automation", 
     page_icon="✨", 
     layout="wide"
 )
 
-# Custom CSS untuk Tampilan Estetik, Bersih, & Profesional (Gaya Neumorphism / Glassmorphism)
+# Custom CSS: Mengadopsi Gaya 3D Glassmorphism & Kosmik dari Referensi
 st.markdown("""
 <style>
-    /* Background & Global Font */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* Global Cosmic Background */
     .stApp {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
+                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #f8fafc;
     }
-    
-    /* Header Styling */
-    .hero-container {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.9);
-        padding: 30px 40px;
-        border-radius: 24px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+
+    /* Hide Streamlit Default Header/Footer elements */
+    header, footer {visibility: hidden;}
+
+    /* Glassmorphism Hero Banner */
+    .hero-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
         margin-bottom: 30px;
     }
-    
-    /* Card Container */
-    .custom-card {
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
-        border: 1px solid #f1f5f9;
+
+    /* Glassmorphic Container Cards */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         margin-bottom: 20px;
     }
 
-    /* Custom Button Style */
+    /* Glowing Gradient Typography */
+    .gradient-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 30%, #a78bfa 70%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+        margin-bottom: 10px;
+    }
+
+    .sub-title {
+        color: #94a3b8;
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    /* Input & Textarea Styling */
+    .stTextInput>div>div>input {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+        border-radius: 14px !important;
+        padding: 12px 18px !important;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.3) !important;
+    }
+
+    /* Custom Futuristic Button */
     .stButton>button {
-        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
         color: white;
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-weight: 600;
+        border-radius: 14px;
+        padding: 14px 28px;
+        font-weight: 700;
         border: none;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 10px 25px rgba(168, 85, 247, 0.4);
         transition: all 0.3s ease;
         width: 100%;
+        letter-spacing: 0.50px;
     }
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(79, 70, 229, 0.35);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(168, 85, 247, 0.6);
+        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
     }
-    
-    /* Text Input & Uploader Customization */
-    .stTextInput>div>div>input {
-        border-radius: 12px;
-        border: 1px solid #cbd5e1;
-        padding: 10px 15px;
-        background: rgba(255, 255, 255, 0.8);
-    }
-    
-    h1, h2, h3 {
-        color: #0f172a;
-        font-weight: 800;
+
+    /* Label Styling */
+    label, .stFileUploader label {
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Header Section
+# Hero Section ala Referensi 3D Kosmik
 st.markdown("""
-    <div class="hero-container">
-        <h1 style="margin:0; font-size: 2.2rem; background: linear-gradient(90deg, #4f46e5, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            ✨ Shutterstock Pro Studio
-        </h1>
-        <p style="color: #64748b; margin-top: 8px; font-size: 1.05rem;">
-            Powered by <b>Gemini 3.5 Flash</b> — AI-Powered Microstock Metadata & CSV Automation Studio.
-        </p>
+    <div class="hero-card">
+        <div class="gradient-title">Shutterstock Pro Studio</div>
+        <div class="sub-title">
+            Next-Gen Microstock Metadata & CSV Automation Studio • Powered by <b>Gemini 3.5 Flash</b>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
-# Layout Utama Dibagi Menjadi 2 Kolom
+# Layout Utama 2 Kolom (Estetik & Modern)
 col1, col2 = st.columns([1, 1.2], gap="large")
 
 with col1:
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    st.subheader("🔑 Konfigurasi & Upload")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("🔑 Konfigurasi & Upload Aset")
     
     api_key = st.text_input("Google Gemini API Key:", type="password", placeholder="Masukkan API Key (AIzaSy...)")
     
@@ -104,19 +138,19 @@ with col1:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    st.subheader("🚀 Hasil Analisis & CSV")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("🚀 Hasil Analisis & Export CSV")
     
     if uploaded_file is not None:
         if st.button("Mulai Automasi SEO & CSV"):
             if not api_key:
                 st.error("⚠️ Silakan masukkan Google Gemini API Key terlebih dahulu!")
             else:
-                with st.spinner("🤖 Gemini 3.5 Flash sedang menganalisis foto dan meracik SEO terbaik..."):
+                with st.spinner("✨ Gemini 3.5 Flash sedang meracik SEO dan Metadata terbaik..."):
                     try:
                         genai.configure(api_key=api_key)
                         
-                        # Menggunakan model gemini-3.5-flash sesuai titah
+                        # Menggunakan model gemini-3.5-flash
                         model = genai.GenerativeModel('gemini-3.5-flash')
                         
                         prompt = """
@@ -147,12 +181,12 @@ with col2:
                         }
                         df = pd.DataFrame(csv_data)
                         
-                        st.success("✅ Metadata & CSV Berhasil Digenerate dengan Gemini 3.5 Flash!")
+                        st.success("✅ SEO & CSV Berhasil Digenerate oleh Gemini 3.5 Flash!")
                         
-                        # Preview Hasil dalam bentuk tabel yang bersih
+                        # Preview Hasil Tabel
                         st.dataframe(df, use_container_width=True)
                         
-                        # Tombol Download CSV
+                        # Tombol Download CSV Estetik
                         csv = df.to_csv(index=False).encode('utf-8')
                         st.download_button(
                             label="📥 Download File CSV Shutterstock",
@@ -164,6 +198,6 @@ with col2:
                     except Exception as e:
                         st.error(f"Terjadi kesalahan: {e}")
     else:
-        st.info("👈 Silakan upload foto di sebelah kiri untuk melihat hasil analisis AI dan mengunduh file CSV.")
+        st.info("👈 Silakan upload foto di sebelah kiri untuk mengaktifkan mesin automasi AI.")
         
     st.markdown('</div>', unsafe_allow_html=True)
