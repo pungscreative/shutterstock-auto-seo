@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Perbaikan Warna Icon, Kontras Label, & Kaca Transparan Menyeluruh
+# CSS Styling - Desain Kartu Kolom Ganda & Kotak Dalam (Inner Box) ala Gambar Referensi
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -20,76 +20,90 @@ st.markdown("""
         background-attachment: fixed;
     }
     
-    /* Efek Kaca Transparan untuk Judul Utama */
+    /* Header Utama dengan Efek Kaca */
     .hero-container {
         text-align: center;
-        padding: 30px;
-        background: rgba(255, 255, 255, 0.4);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        padding: 25px;
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
         border-radius: 20px;
         margin-bottom: 25px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
     
-    /* Efek Kaca Transparan Membungkus Utuh Seluruh Kolom */
-    [data-testid="column"] {
-        background: rgba(255, 255, 255, 0.4) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
-        border-radius: 20px !important;
-        padding: 25px !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    .badge-text {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #7e22ce;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
     }
     
-    /* Font Tebal Gemuk dengan Gradasi untuk Judul Utama */
     .gradient-title {
         font-family: 'Fredoka', sans-serif;
         font-weight: 700;
-        font-size: 2.5rem;
+        font-size: 2.3rem;
         background: linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 5px;
     }
-    
-    /* Gradasi Teks Heading Kolom (Tanpa Mengubah Warna Icon/Emoji Asli) */
-    .gradient-heading {
-        font-family: 'Fredoka', sans-serif;
-        font-weight: 700;
-        font-size: 1.25rem;
-        background: linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: inline-block;
-        margin-bottom: 15px;
+
+    /* Kartu Kolom Utama (Efek Kaca Pembungkus Besar) */
+    .card-column {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        height: 100%;
     }
-    
-    /* Kontras Tinggi untuk Label Teks Upload Foto */
+
+    /* Kotak Dalam (Inner Box) untuk Konten Widget */
+    .inner-box {
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 15px;
+    }
+
+    .card-title {
+        font-family: 'Fredoka', sans-serif;
+        font-weight: 600;
+        font-size: 1.15rem;
+        color: #1e1b4b;
+        margin-bottom: 0px;
+    }
+
     .stFileUploader label p {
         color: #1e1b4b !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Header Utama
+# Header Utama dengan Badge
 st.markdown("""
 <div class="hero-container">
-    <h1 class="gradient-title">✨ Nyetok.Kuy Pro</h1>
-    <p style="color: #475569; font-weight: 500;">Sistem Otomatisasi Metadata Stok Foto Profesional & SEO Optimal</p>
+    <div class="badge-text">✨ AI-POWERED PUNGS CREATIVE</div>
+    <h1 class="gradient-title">Nyetok.Kuy Pro</h1>
+    <p style="color: #475569; font-weight: 500; font-size: 0.95rem;">Sistem Otomatisasi Metadata Stok Foto Profesional & SEO Optimal</p>
 </div>
 """, unsafe_allow_html=True)
 
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    # Heading dengan Icon Warna Asli & Teks Gradasi
-    st.markdown('<div><span>⚙️</span> <span class="gradient-heading">Konfigurasi & Upload</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-column">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">⚙️ Konfigurasi & Upload</div>', unsafe_allow_html=True)
     
+    st.markdown('<div class="inner-box">', unsafe_allow_html=True)
     api_key = None
     try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -100,17 +114,20 @@ with col1:
     if not api_key:
         api_key = st.text_input("🔑 Masukkan Gemini API Key", type="password")
     
-    uploaded_file = st.file_uploader("Upload Foto Produk", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("📁 Drag & Drop atau Klik untuk Upload Foto Produk (Max 200MB)", type=["jpg", "jpeg", "png"])
     
     if uploaded_file:
         st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    # Heading dengan Icon Warna Asli & Teks Gradasi
-    st.markdown('<div><span>📊</span> <span class="gradient-heading">Hasil Pemrosesan AI</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-column">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
+    st.markdown('<div class="inner-box">', unsafe_allow_html=True)
     if uploaded_file and api_key:
-        if st.button("🚀 Generate Metadata SEO", type="primary"):
+        if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
             with st.spinner("✨ AI sedang meracik metadata terbaik..."):
                 try:
                     client = genai.Client(api_key=api_key.strip())
@@ -136,7 +153,15 @@ with col2:
                 except Exception as e:
                     st.error(f"Terjadi kesalahan pada sistem AI: {e}")
     else:
-        st.info("💡 Silakan unggah foto dan pastikan API Key sudah tersedia untuk mengaktifkan tombol.")
+        st.markdown("""
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #475569; font-size: 0.9rem; margin-bottom: 15px;">⚡ Silakan unggah foto terlebih dahulu di kolom sebelah kiri untuk mengaktifkan mesin AI.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
