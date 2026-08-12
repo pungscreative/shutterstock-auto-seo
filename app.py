@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import re
+import time
 from PIL import Image
 from google import genai
 
@@ -75,7 +76,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Kontainer Kaca Transparan Pekat di Sebelah Kanan (Dijamin Terlihat Jelas & Berisi) */
+    /* Kontainer Kaca Transparan Pekat di Sebelah Kanan */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(20, 15, 35, 0.85) !important;
         background-color: rgba(20, 15, 35, 0.85) !important;
@@ -159,65 +160,84 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    # Kontainer Pembungkus Kaca Pekat yang Dijamin Muncul
+    # Kontainer Pembungkus Kaca Pekat
     with st.container(border=True):
         if uploaded_file and api_key:
             if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
-                with st.spinner("✨ AI sedang meracik metadata terbaik..."):
-                    try:
-                        client = genai.Client(api_key=api_key.strip())
-                        img = Image.open(uploaded_file)
-                        
-                        prompt = """
-                        Act as a professional Shutterstock contributor. 
-                        Analyze the image and provide metadata in English format:
-                        TITLE: [A concise, commercial search-friendly title]
-                        KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords without any markdown symbols.]
-                        CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                        DESCRIPTION: [A detailed commercial description]
-                        """
-                        
-                        response = client.models.generate_content(
-                            model='gemini-3.5-flash',
-                            contents=[prompt, img]
-                        )
-                        
-                        # Parsing respons AI yang bersih dari simbol markdown & keyword kosong
-                        data_dict = {}
-                        for line in response.text.split('\n'):
-                            if ':' in line:
-                                parts = line.split(':', 1)
-                                clean_key = re.sub(r'[\*\-\#]', '', parts[0]).strip().upper()
-                                clean_val = re.sub(r'^[\*\-\#\s]+', '', parts[1]).strip().replace('[', '').replace(']', '')
-                                data_dict[clean_key] = clean_val
-                                
-                        desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
-                        desc = re.sub(r'[\*]', '', desc)
-                        
-                        # Ekstraksi keyword dengan pembersihan total dari simbol asterisks/bold markdown
-                        raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
-                        if not raw_keywords:
+                with st.spinner("✨ Server sedang sibuk, sistem mencoba menghubungkan ulang secara otomatis..."):
+                    response = None
+                    max_retries = 3
+                    retry_delay = 3
+                    
+                    for attempt in range(max_retries):
+                        try:
+                            client = genai.Client(api_key=api_key.strip())
+                            img = Image.open(uploaded_file)
+                            
+                            prompt = """
+                            Act as a professional Shutterstock contributor. 
+                            Analyze the image and provide metadata in English format:
+                            TITLE: [A concise, commercial search-friendly title]
+                            KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords without any markdown symbols.]
+                            CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
+                            DESCRIPTION: [A detailed commercial description]
+                            """
+                            
+                            response = client.models.generate_content(
+                                model='gemini-3.5-flash',
+                                contents=[prompt, img]
+                            )
+                            break # Berhasil keluar dari loop jika sukses
+                        except Exception as e:
+                            err_str = str(e)
+                            if ("503" in err_str or "UNAVAILABLE" in err_str) and attempt < max_retries - 1:
+                                time.sleep(retry_delay)
+                                continue
+                            else:
+                                if attempt == max_retries - 1:
+                                    st.error(f"Gagal setelah {max_retries} kali percobaan karena server padat: {err_str}")
+                                else:
+                                    st.error(f"Terjadi kesalahan pada sistem AI: {err_str}")
+                                break
+                    
+                    if response and hasattr(response, 'text'):
+                        try:
+                            # Parsing respons AI yang bersih dari simbol markdown & keyword kosong
+                            data_dict = {}
                             for line in response.text.split('\n'):
-                                if 'keyword' in line.lower() and ':' in line:
-                                    raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
+                                if ':' in line:
+                                    parts = line.split(':', 1)
+                                    clean_key = re.sub(r'[\*\-\#]', '', parts[0]).strip().upper()
+                                    clean_val = re.sub(r'^[\*\-\#\s]+', '', parts[1]).strip().replace('[', '').replace(']', '')
+                                    data_dict[clean_key] = clean_val
                                     
-                        # Bersihkan semua simbol bintang dan markdown yang tersisa
-                        raw_keywords = raw_keywords.replace('**', '').replace('*', '')
-                        keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
-                        final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
-                        
-                        st.session_state.df_result = pd.DataFrame({
-                            "Filename": [uploaded_file.name],
-                            "Description": [desc],
-                            "Keywords": [final_keywords],
-                            "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
-                            "Illustration": ["No"],
-                            "Mature Content": ["No"],
-                            "Editorial": ["No"]
-                        })
-                        st.session_state.filename_result = uploaded_file.name
-                    except Exception as e:
-                        st.error(f"Terjadi kesalahan pada sistem AI: {e}")
+                            desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
+                            desc = re.sub(r'[\*]', '', desc)
+                            
+                            # Ekstraksi keyword dengan pembersihan total dari simbol asterisks/bold markdown
+                            raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
+                            if not raw_keywords:
+                                for line in response.text.split('\n'):
+                                    if 'keyword' in line.lower() and ':' in line:
+                                        raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
+                                        
+                            # Bersihkan semua simbol bintang dan markdown yang tersisa
+                            raw_keywords = raw_keywords.replace('**', '').replace('*', '')
+                            keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
+                            final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
+                            
+                            st.session_state.df_result = pd.DataFrame({
+                                "Filename": [uploaded_file.name],
+                                "Description": [desc],
+                                "Keywords": [final_keywords],
+                                "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
+                                "Illustration": ["No"],
+                                "Mature Content": ["No"],
+                                "Editorial": ["No"]
+                            })
+                            st.session_state.filename_result = uploaded_file.name
+                        except Exception as parse_err:
+                            st.error(f"Gagal memproses data dari AI: {parse_err}")
             
             # Tampilkan hasil jika sudah digenerate untuk file ini
             if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
