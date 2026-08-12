@@ -2,12 +2,12 @@ import streamlit as st
 from PIL import Image
 import google.generativeai as genai
 
-st.set_page_config(page_title="Shutterstock Auto SEO (Free)", page_icon="📸", layout="centered")
+st.set_page_config(page_title="Shutterstock Auto SEO (Gemini 3.5)", page_icon="📸", layout="centered")
 
-st.title("📸 Shutterstock Auto-SEO & Reviewer (Gratis)")
-st.markdown("Upload foto Anda dari device mana saja. AI (Google Gemini) akan mereview nilai komersialnya dan membuat **Judul**, **Deskripsi**, serta **50 Keyword** optimal untuk Shutterstock.")
+st.title("📸 Shutterstock Auto-SEO & Reviewer")
+st.markdown("Upload foto Anda dari device mana saja. AI **Gemini 3.5 Flash** akan mereview nilai komersialnya dan membuat **Judul**, **Deskripsi**, serta **50 Keyword** optimal untuk Shutterstock.")
 
-st.info("Aplikasi ini menggunakan Google Gemini API (100% Gratis & Tanpa Kartu Kredit). Masukkan Gemini API Key Anda di bawah.")
+st.info("Menggunakan model terbaru Gemini 3.5 Flash (100% Gratis via Google AI Studio). Masukkan API Key Anda di bawah.")
 api_key = st.text_input("Google Gemini API Key:", type="password")
 
 uploaded_file = st.file_uploader("Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"])
@@ -20,11 +20,13 @@ if uploaded_file is not None:
         if not api_key:
             st.error("⚠️ Silakan masukkan API Key Gemini terlebih dahulu.")
         else:
-            with st.spinner("🤖 AI sedang menganalisis foto, mencari tren pasar, dan menyusun keyword..."):
+            with st.spinner("🤖 Gemini 3.5 Flash sedang menganalisis foto dan menyusun SEO optimal..."):
                 try:
                     # Konfigurasi API Gemini
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    
+                    # Menggunakan model gemini-3.5-flash
+                    model = genai.GenerativeModel('gemini-3.5-flash')
                     
                     prompt = """
                     Act as a Shutterstock Microstock Expert. Analyze this image and provide data to maximize downloads.
@@ -46,7 +48,7 @@ if uploaded_file is not None:
                     
                     response = model.generate_content([prompt, image])
                     
-                    st.success("✅ Data SEO Berhasil Dibuat! Silakan copy data di bawah ke Shutterstock.")
+                    st.success("✅ Data SEO Berhasil Dibuat dengan Gemini 3.5 Flash!")
                     st.markdown(response.text)
                     
                 except Exception as e:
