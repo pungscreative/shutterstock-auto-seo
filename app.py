@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
+import re
 from PIL import Image
 from google import genai
 
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kolom Kanan Otomatis
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Utuh
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -74,13 +75,15 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Kotak Kaca Transparan Otomatis Membungkus Seluruh Isi Kolom Kanan Secara Utuh */
-    [data-testid="column"]:nth-of-type(2) > div > [data-testid="stVerticalBlock"] {
+    /* Efek Kaca Transparan yang Membungkus Seluruh Konten di Kolom Kanan */
+    [data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(255, 255, 255, 0.07) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
         border-radius: 15px !important;
-        padding: 20px !important;
-        margin-top: 5px !important;
+        padding: 15px !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
     }
 
     [data-testid="stFileUploader"] {
@@ -155,81 +158,84 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    if uploaded_file and api_key:
-        if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
-            with st.spinner("✨ AI sedang meracik metadata terbaik..."):
-                try:
-                    client = genai.Client(api_key=api_key.strip())
-                    img = Image.open(uploaded_file)
-                    
-                    prompt = """
-                    Act as a professional Shutterstock contributor. 
-                    Analyze the image and provide metadata in English format:
-                    TITLE: [A concise, commercial search-friendly title]
-                    KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords.]
-                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A detailed commercial description]
-                    """
-                    
-                    response = client.models.generate_content(
-                        model='gemini-3.5-flash',
-                        contents=[prompt, img]
-                    )
-                    
-                    # Parsing respons AI yang tangguh & aman dari keyword kosong
-                    data_dict = {}
-                    for line in response.text.split('\n'):
-                        if ':' in line:
-                            parts = line.split(':', 1)
-                            k_key = parts[0].strip().upper()
-                            k_val = parts[1].strip().replace('[', '').replace(']', '')
-                            data_dict[k_key] = k_val
-                            
-                    desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
-                    
-                    # Pengaman ekstraksi keyword agar tidak kosong
-                    raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
-                    if not raw_keywords:
+    # Kontainer Pembungkus Kaca Transparan yang Utuh
+    with st.container(border=True):
+        if uploaded_file and api_key:
+            if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
+                with st.spinner("✨ AI sedang meracik metadata terbaik..."):
+                    try:
+                        client = genai.Client(api_key=api_key.strip())
+                        img = Image.open(uploaded_file)
+                        
+                        prompt = """
+                        Act as a professional Shutterstock contributor. 
+                        Analyze the image and provide metadata in English format:
+                        TITLE: [A concise, commercial search-friendly title]
+                        KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords.]
+                        CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
+                        DESCRIPTION: [A detailed commercial description]
+                        """
+                        
+                        response = client.models.generate_content(
+                            model='gemini-3.5-flash',
+                            contents=[prompt, img]
+                        )
+                        
+                        # Parsing respons AI yang bersih dari simbol markdown asterisks & keyword kosong
+                        data_dict = {}
                         for line in response.text.split('\n'):
-                            if 'keyword' in line.lower() and ':' in line:
-                                raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
+                            if ':' in line:
+                                parts = line.split(':', 1)
+                                clean_key = re.sub(r'[\*\-\#]', '', parts[0]).strip().upper()
+                                clean_val = re.sub(r'^[\*\-\#\s]+', '', parts[1]).strip().replace('[', '').replace(']', '')
+                                data_dict[clean_key] = clean_val
                                 
-                    keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
-                    final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
-                    
-                    st.session_state.df_result = pd.DataFrame({
-                        "Filename": [uploaded_file.name],
-                        "Description": [desc],
-                        "Keywords": [final_keywords],
-                        "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
-                        "Illustration": ["No"],
-                        "Mature Content": ["No"],
-                        "Editorial": ["No"]
-                    })
-                    st.session_state.filename_result = uploaded_file.name
-                except Exception as e:
-                    st.error(f"Terjadi kesalahan pada sistem AI: {e}")
-        
-        # Tampilkan hasil jika sudah digenerate untuk file ini
-        if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
-            st.success("🎉 Metadata berhasil disusun!")
-            st.dataframe(st.session_state.df_result, use_container_width=True)
+                        desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
+                        
+                        # Ekstraksi keyword dengan pembersihan regex anti-kosong dan anti-markdown
+                        raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
+                        if not raw_keywords:
+                            for line in response.text.split('\n'):
+                                if 'keyword' in line.lower() and ':' in line:
+                                    raw_keywords = re.sub(r'^[\*\-\#\s]+', '', line.split(':', 1)[1]).strip().replace('[', '').replace(']', '')
+                                    
+                        raw_keywords = re.sub(r'[\*]', '', raw_keywords)
+                        keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
+                        final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
+                        
+                        st.session_state.df_result = pd.DataFrame({
+                            "Filename": [uploaded_file.name],
+                            "Description": [desc],
+                            "Keywords": [final_keywords],
+                            "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
+                            "Illustration": ["No"],
+                            "Mature Content": ["No"],
+                            "Editorial": ["No"]
+                        })
+                        st.session_state.filename_result = uploaded_file.name
+                    except Exception as e:
+                        st.error(f"Terjadi kesalahan pada sistem AI: {e}")
             
-            csv = st.session_state.df_result.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Download CSV Siap Upload", 
-                data=csv, 
-                file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
-                mime="text/csv",
-                use_container_width=True
-            )
-    else:
-        st.markdown("""
-        <div style="text-align: center; padding: 10px;">
-            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">⚡ Silakan unggah foto terlebih dahulu di kolom sebelah kiri untuk mengaktifkan mesin AI.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
+            # Tampilkan hasil jika sudah digenerate untuk file ini
+            if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
+                st.success("🎉 Metadata berhasil disusun!")
+                st.dataframe(st.session_state.df_result, use_container_width=True)
+                
+                csv = st.session_state.df_result.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="📥 Download CSV Siap Upload", 
+                    data=csv, 
+                    file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        else:
+            st.markdown("""
+            <div style="text-align: center; padding: 10px;">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">⚡ Silakan unggah foto terlebih dahulu di kolom sebelah kiri untuk mengaktifkan mesin AI.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
 
 # Footer
 st.markdown("---")
