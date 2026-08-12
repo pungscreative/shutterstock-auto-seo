@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Gradasi Judul & Subteks serta Efek Kaca Transparan yang Seragam
+# CSS Styling - Efek Kaca Membungkus Kolom Secara Utuh & Gradasi Judul
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -20,28 +20,31 @@ st.markdown("""
         background-attachment: fixed;
     }
     
-    /* Efek Kaca Transparan yang Seragam untuk Judul & Kolom */
-    .hero-container, .glass-box {
+    /* Efek Kaca Transparan untuk Judul Utama */
+    .hero-container {
+        text-align: center;
+        padding: 30px;
         background: rgba(255, 255, 255, 0.4);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 20px;
+        margin-bottom: 25px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
     
-    .hero-container {
-        text-align: center;
-        padding: 30px;
-        margin-bottom: 25px;
+    /* Efek Kaca Transparan yang Membungkus Seluruh Kolom (Merangkul Isi Kolom Utuh) */
+    [data-testid="column"] {
+        background: rgba(255, 255, 255, 0.4) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border-radius: 20px !important;
+        padding: 25px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
     }
     
-    .glass-box {
-        padding: 25px;
-        height: 100%;
-    }
-    
-    /* Font Tebal Gemuk dengan Gradasi untuk Judul & Subteks */
+    /* Font Tebal Gemuk dengan Gradasi untuk Judul & Subteks Kolom */
     .gradient-title, .gradient-heading {
         font-family: 'Fredoka', sans-serif;
         font-weight: 700;
@@ -73,10 +76,8 @@ st.markdown("""
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
     st.markdown('<h3 class="gradient-heading">⚙️ Konfigurasi & Upload</h3>', unsafe_allow_html=True)
     
-    # Ambil API Key dari secrets atau sediakan input manual jika gagal
     api_key = None
     try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -91,10 +92,8 @@ with col1:
     
     if uploaded_file:
         st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
     st.markdown('<h3 class="gradient-heading">📊 Hasil Pemrosesan AI</h3>', unsafe_allow_html=True)
     
     if uploaded_file and api_key:
@@ -125,7 +124,6 @@ with col2:
                     st.error(f"Terjadi kesalahan pada sistem AI: {e}")
     else:
         st.info("💡 Silakan unggah foto dan pastikan API Key sudah tersedia untuk mengaktifkan tombol.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
