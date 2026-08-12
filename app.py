@@ -12,6 +12,16 @@ st.markdown("""
         background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c084fc 100%); 
         color: #f8fafc; 
     }
+    /* Membungkus pas teks label dan input dengan kotak transparan */
+    .stTextInput, .stFileUploader { 
+        background: rgba(255, 255, 255, 0.08); 
+        backdrop-filter: blur(20px); 
+        border: 1px solid rgba(255, 255, 255, 0.2); 
+        border-radius: 24px; 
+        padding: 20px; 
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+        margin-bottom: 20px; 
+    }
     .glass-card { 
         background: rgba(255, 255, 255, 0.08); 
         backdrop-filter: blur(20px); 
@@ -30,17 +40,13 @@ st.title("✨ Nyetok.Kuy")
 col1, col2 = st.columns([1, 1.5])
 
 with col1:
-    # Kotak Transparan 1: Khusus API Key
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    # Kotak transparan otomatis membungkus label dan input API Key
     api_key = st.text_input("Masukkan API Key (AQ...):", type="password", placeholder="Paste API Key di sini...")
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Kotak Transparan 2: Khusus Upload Foto
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    # Kotak transparan otomatis membungkus label dan upload foto
     uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         st.image(uploaded_file, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -51,7 +57,6 @@ with col2:
                     client = genai.Client(api_key=api_key.strip())
                     img = Image.open(uploaded_file)
                     
-                    # Prompt dengan penegasan batas kata kunci
                     prompt = """
                     Act as a professional Shutterstock contributor. 
                     Analyze the image and provide metadata in English:
@@ -66,28 +71,21 @@ with col2:
                         contents=[prompt, img]
                     )
                     
-                    # Parsing hasil dari AI
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
                             key, val = line.split(':', 1)
                             data_dict[key.strip()] = val.strip()
                             
-                    # 1. PENGAMAN DESKRIPSI (Min 5 kata)
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
                     if len(desc.split()) < 5:
                         desc += " high quality premium stock photography"
                         
-                    # 2. PENGAMAN KATA KUNCI MUTLAK (Maksimal 50 kata)
                     raw_keywords = data_dict.get('KEYWORDS', '')
-                    # Pecah berdasarkan koma, bersihkan spasi
                     keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
-                    # Paksa potong hanya ambil 50 kata pertama jika AI membandel
                     keyword_list = keyword_list[:50]
                     final_keywords = ','.join(keyword_list)
                     
-                    # 3. PEMBENTUKAN CSV SESUAI STANDAR SHUTTERSTOCK
-                    # Header harus persis sama dengan aturan impor CSV Shutterstock
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [desc],
@@ -101,7 +99,6 @@ with col2:
                     st.success("✅ Metadata & CSV Berhasil Digenerate!")
                     st.dataframe(df)
                     
-                    # Tombol Download CSV
                     csv = df.to_csv(index=False).encode('utf-8')
                     st.download_button(
                         label="📥 Download File CSV Shutterstock", 
