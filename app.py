@@ -1,124 +1,41 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
-from google import genai
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part
 from datetime import datetime
 
-# Konfigurasi Halaman & Tema Estetik Glassmorphism
-st.set_page_config(page_title="Shutterstock Pro Studio", page_icon="✨", layout="wide")
+st.set_page_config(page_title="Shutterstock Pro Studio", layout="wide")
 
-st.markdown("""
-<style>
-    .stApp { 
-        background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%), 
-                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
-        color: #f8fafc; 
-    }
-    .glass-card { 
-        background: rgba(255, 255, 255, 0.03); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.08); 
-        border-radius: 24px; 
-        padding: 30px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
-    }
-    .stButton>button { width: 100%; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; border: none; }
-</style>
-""", unsafe_allow_html=True)
+st.title("✨ Shutterstock Pro Studio (Vertex AI Mode)")
 
-st.title("✨ Shutterstock Pro Studio")
+# Masukkan Project ID yang terlihat di gambar Baginda (489544160497)
+project_id = st.text_input("Project ID:", value="489544160497")
+uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
 
-col1, col2 = st.columns([1, 1.5])
-
-with col1:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    api_key = st.text_input("Gemini API Key:", type="password", placeholder="Masukkan API Key Baginda...")
-    uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
-    if uploaded_file:
-        st.image(uploaded_file, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col2:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    if uploaded_file and api_key:
-        if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Menggunakan Interactions API terbaru..."):
-                try:
-                    # Inisialisasi Google GenAI Client
-                    client = genai.Client(api_key=api_key)
-                    
-                    img = Image.open(uploaded_file)
-                    prompt = """
-                    Act as a professional Shutterstock contributor. 
-                    Analyze the image and provide metadata in English:
-                    TITLE: [A concise, commercial search-friendly title]
-                    KEYWORDS: [50 relevant comma-separated keywords]
-                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A detailed commercial description]
-                    """
-                    
-                    # Menggunakan string model default kosong atau gemini-2.5-flash lewat interaksi standar
-                    # Berdasarkan dokumentasi migrasi Interactions API, kita gunakan client.chats atau client.models langsung
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=[prompt, img]
-                    )
-                    
-                    # Parsing hasil dari AI
-                    data_dict = {}
-                    for line in response.text.split('\n'):
-                        if ':' in line:
-                            key, val = line.split(':', 1)
-                            data_dict[key.strip()] = val.strip()
-                    
-                    # Membuat DataFrame sesuai format standar Shutterstock
-                    df = pd.DataFrame({
-                        "Filename": [uploaded_file.name],
-                        "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
-                        "Keywords": [data_dict.get('KEYWORDS', '')],
-                        "Categories": [data_dict.get('CATEGORY', 'Nature')],
-                        "Editorial": [0],
-                        "Date Created": [datetime.now().strftime("%Y-%m-%d")],
-                        "Location": ["Mataram"]
-                    })
-                    
-                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
-                    st.dataframe(df)
-                    
-                    # Tombol Download CSV
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
-                
-                except Exception as e:
-                    # Jika model 2.5-flash diblokir spesifik, kita sediakan mekanisme penanganan otomatis langsung dari error handler
-                    try:
-                        # Fallback otomatis ke model tanpa spesifikasi versi jika didukung client
-                        response = client.models.generate_content(
-                            model='gemini-flash',
-                            contents=[prompt, img]
-                        )
-                        # Parsing ulang jika fallback sukses
-                        data_dict = {}
-                        for line in response.text.split('\n'):
-                            if ':' in line:
-                                key, val = line.split(':', 1)
-                                data_dict[key.strip()] = val.strip()
-                                
-                        df = pd.DataFrame({
-                            "Filename": [uploaded_file.name],
-                            "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
-                            "Keywords": [data_dict.get('KEYWORDS', '')],
-                            "Categories": [data_dict.get('CATEGORY', 'Nature')],
-                            "Editorial": [0],
-                            "Date Created": [datetime.now().strftime("%Y-%m-%d")],
-                            "Location": ["Mataram"]
-                        })
-                        st.success("✅ Metadata & CSV Berhasil Digenerate (Fallback Mode)!")
-                        st.dataframe(df)
-                        csv = df.to_csv(index=False).encode('utf-8')
-                        st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
-                    except Exception as inner_e:
-                        st.error(f"Terjadi kesalahan sistem: {inner_e}")
-    else:
-        st.info("Silakan masukkan API Key dan upload foto di sebelah kiri untuk memulai.")
-    st.markdown('</div>', unsafe_allow_html=True)
+if uploaded_file and project_id:
+    if st.button("Generate SEO Metadata"):
+        try:
+            # Inisialisasi Vertex AI
+            vertexai.init(project=project_id, location="us-central1")
+            model = GenerativeModel("gemini-1.5-flash-001")
+            
+            img_bytes = uploaded_file.getvalue()
+            image_part = Part.from_data(data=img_bytes, mime_type="image/jpeg")
+            
+            prompt = """
+            Act as a professional Shutterstock contributor. 
+            Provide metadata in English:
+            TITLE: [Concise title]
+            KEYWORDS: [50 comma-separated keywords]
+            CATEGORY: [Nature, People, Technology, or Backgrounds]
+            DESCRIPTION: [Detailed description]
+            """
+            
+            response = model.generate_content([prompt, image_part])
+            
+            st.success("Berhasil!")
+            st.write(response.text)
+            
+        except Exception as e:
+            st.error(f"Error Vertex AI: {e}")
