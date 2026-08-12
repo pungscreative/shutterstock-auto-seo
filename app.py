@@ -8,42 +8,72 @@ st.set_page_config(page_title="Nyetok.Kuy", page_icon="✨", layout="wide")
 
 st.markdown("""
 <style>
+    /* Latar Belakang Utama ala Kosmik Ungu Referensi */
     .stApp { 
-        background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c084fc 100%); 
+        background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #1e1b4b 100%); 
         color: #f8fafc; 
     }
-    /* Membungkus pas teks label dan input dengan kotak transparan */
+    
+    /* Mengubah wadah utama Streamlit menjadi Bingkai Kartu Kaca Melayang (Main Window Frame) */
+    .block-container {
+        background: rgba(35, 15, 70, 0.65);
+        backdrop-filter: blur(30px);
+        border: 2px solid rgba(255, 255, 255, 0.22);
+        border-radius: 35px;
+        padding: 40px 50px !important;
+        box-shadow: 0 35px 70px rgba(0, 0, 0, 0.6);
+        margin-top: 35px;
+        margin-bottom: 35px;
+        max-width: 1300px;
+    }
+
+    /* Kotak Transparan untuk Input & Upload */
     .stTextInput, .stFileUploader { 
-        background: rgba(255, 255, 255, 0.08); 
+        background: rgba(255, 255, 255, 0.06); 
         backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.2); 
-        border-radius: 24px; 
+        border: 1px solid rgba(255, 255, 255, 0.15); 
+        border-radius: 20px; 
         padding: 20px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); 
         margin-bottom: 20px; 
     }
-    /* Mengubah gaya kotak input API Key agar memiliki border dashed seperti kolom upload foto */
+
+    /* Kotak dalam input API Key agar kembar identik dengan upload foto */
     div[data-baseweb="input"] {
         background-color: rgba(20, 18, 45, 0.75) !important;
         border: 1px dashed rgba(255, 255, 255, 0.3) !important;
         border-radius: 12px !important;
     }
-    /* Menyelaraskan warna area dalam file uploader */
+
+    /* Area dalam file uploader */
     div[data-testid="stFileUploader"] section {
         background-color: rgba(20, 18, 45, 0.75) !important;
         border: 1px dashed rgba(255, 255, 255, 0.3) !important;
         border-radius: 12px !important;
     }
+
+    /* Kartu Kaca Sisi Kanan */
     .glass-card { 
-        background: rgba(255, 255, 255, 0.08); 
+        background: rgba(255, 255, 255, 0.06); 
         backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.2); 
+        border: 1px solid rgba(255, 255, 255, 0.15); 
         border-radius: 24px; 
         padding: 25px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); 
         margin-bottom: 20px;
     }
-    .stButton>button { width: 100%; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; border: none; }
+
+    /* Tombol Utama Bergaya Neon Gradient */
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 14px; 
+        background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6); 
+        color: white; 
+        font-weight: 700; 
+        border: none; 
+        padding: 12px;
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+    }
 </style>
 """, unsafe_allow_html=True)
 
