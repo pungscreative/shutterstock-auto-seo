@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 from google import genai
-from datetime import datetime
 
 # Konfigurasi Halaman & Tema Estetik
 st.set_page_config(page_title="Shutterstock Pro Studio", page_icon="✨", layout="wide")
@@ -44,20 +43,21 @@ with col2:
         if st.button("Generate SEO Metadata & CSV"):
             with st.spinner("✨ Menghubungkan ke Gemini 3.5 Flash..."):
                 try:
-                    # Inisialisasi klien resmi google-genai
+                    # Inisialisasi klien
                     client = genai.Client(api_key=api_key.strip())
                     
                     img = Image.open(uploaded_file)
+                    
+                    # Prompt diperbarui: Deskripsi dibatasi secara ketat
                     prompt = """
                     Act as a professional Shutterstock contributor. 
                     Analyze the image and provide metadata in English:
                     TITLE: [A concise, commercial search-friendly title]
                     KEYWORDS: [50 relevant comma-separated keywords]
                     CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A detailed commercial description]
+                    DESCRIPTION: [A commercial description, MAXIMUM 150 characters]
                     """
                     
-                    # Titah Baginda: Menggunakan gemini-3.5-flash
                     response = client.models.generate_content(
                         model='gemini-3.5-flash',
                         contents=[prompt, img]
@@ -69,19 +69,24 @@ with col2:
                         if ':' in line:
                             key, val = line.split(':', 1)
                             data_dict[key.strip()] = val.strip()
+                            
+                    # Pengaman Karakter: Memastikan deskripsi tidak melebihi 190 karakter
+                    desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
+                    if len(desc) > 190:
+                        desc = desc[:187] + "..."
                     
-                    # Membuat DataFrame sesuai format standar Shutterstock
+                    # Templat Tabel SANGAT KETAT sesuai syarat Shutterstock
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
-                        "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
+                        "Description": [desc],
                         "Keywords": [data_dict.get('KEYWORDS', '')],
                         "Categories": [data_dict.get('CATEGORY', 'Nature')],
-                        "Editorial": [0],
-                        "Date Created": [datetime.now().strftime("%Y-%m-%d")],
-                        "Location": ["Mataram"]
+                        "Illustration": ["No"],
+                        "Mature Content": ["No"],
+                        "Editorial": ["No"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate dengan Gemini 3.5 Flash!")
+                    st.success("✅ Metadata & CSV Berhasil Digenerate dengan Format Ketat Shutterstock!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
