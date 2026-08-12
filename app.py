@@ -46,14 +46,13 @@ with col2:
                     client = genai.Client(api_key=api_key.strip())
                     img = Image.open(uploaded_file)
                     
-                    # PROMPT DIKEMBALIKAN KE FORMAT AWAL YANG SUDAH BENAR
-                    # Hanya instruksi kategori yang diubah untuk meminta 2 kategori
+                    # Prompt dengan penegasan batas kata kunci
                     prompt = """
                     Act as a professional Shutterstock contributor. 
                     Analyze the image and provide metadata in English:
                     TITLE: [A concise, commercial search-friendly title]
                     KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords. DO NOT EXCEED 50.]
-                    CATEGORY: [Pick TWO different relevant categories separated by a comma (e.g., Animals/Wildlife, Nature)]
+                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
                     DESCRIPTION: [A detailed commercial description, minimum 6 words]
                     """
                     
@@ -62,39 +61,39 @@ with col2:
                         contents=[prompt, img]
                     )
                     
-                    # Parsing hasil dari AI (ditambahkan .upper() agar kata kunci kebal dari bug huruf kecil)
+                    # Parsing hasil dari AI
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
                             key, val = line.split(':', 1)
-                            data_dict[key.strip().upper()] = val.strip()
+                            data_dict[key.strip()] = val.strip()
                             
                     # 1. PENGAMAN DESKRIPSI (Min 5 kata)
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
                     if len(desc.split()) < 5:
                         desc += " high quality premium stock photography"
                         
-                    # 2. PENGAMAN KATA KUNCI (Maksimal 50 kata)
+                    # 2. PENGAMAN KATA KUNCI MUTLAK (Maksimal 50 kata)
                     raw_keywords = data_dict.get('KEYWORDS', '')
+                    # Pecah berdasarkan koma, bersihkan spasi
                     keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
+                    # Paksa potong hanya ambil 50 kata pertama jika AI membandel
                     keyword_list = keyword_list[:50]
                     final_keywords = ','.join(keyword_list)
                     
-                    # 3. KATEGORI (AI akan otomatis memberikan 2 kategori yang dipisah koma)
-                    final_categories = data_dict.get('CATEGORY', 'Animals/Wildlife')
-                    
-                    # 4. PEMBENTUKAN CSV
+                    # 3. PEMBENTUKAN CSV SESUAI STANDAR SHUTTERSTOCK
+                    # Header harus persis sama dengan aturan impor CSV Shutterstock
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [desc],
                         "Keywords": [final_keywords],
-                        "Categories": [final_categories],
+                        "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
                         "Illustration": ["No"],
                         "Mature Content": ["No"],
                         "Editorial": ["No"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate (Kata Kunci Aman & 2 Kategori Aktif)!")
+                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
