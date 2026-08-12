@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Tombol Matching
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kolom Kanan Otomatis
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -74,8 +74,16 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Kotak Inner Box untuk File Uploader & Area Hasil AI Menyeluruh */
-    [data-testid="stFileUploader"], .inner-result-box {
+    /* Kotak Kaca Transparan Otomatis Membungkus Seluruh Isi Kolom Kanan Secara Utuh */
+    [data-testid="column"]:nth-of-type(2) > div > [data-testid="stVerticalBlock"] {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 15px !important;
+        padding: 20px !important;
+        margin-top: 5px !important;
+    }
+
+    [data-testid="stFileUploader"] {
         background: rgba(255, 255, 255, 0.07) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
         border-radius: 15px !important;
@@ -109,6 +117,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Inisialisasi Session State untuk Hasil AI
+if "df_result" not in st.session_state:
+    st.session_state.df_result = None
+if "filename_result" not in st.session_state:
+    st.session_state.filename_result = None
+
 # Header Utama dengan Badge
 st.markdown("""
 <div class="hero-container">
@@ -141,9 +155,6 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    # Membungkus seluruh area hasil dan aksi di kolom kanan dengan efek kaca transparan
-    st.markdown('<div class="inner-result-box">', unsafe_allow_html=True)
-    
     if uploaded_file and api_key:
         if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
             with st.spinner("✨ AI sedang meracik metadata terbaik..."):
@@ -165,7 +176,7 @@ with col2:
                         contents=[prompt, img]
                     )
                     
-                    # Parsing respons AI yang lebih aman & tangguh terhadap keyword kosong
+                    # Parsing respons AI yang tangguh & aman dari keyword kosong
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
@@ -176,7 +187,7 @@ with col2:
                             
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
                     
-                    # Ekstraksi keyword dengan pengaman fallback
+                    # Pengaman ekstraksi keyword agar tidak kosong
                     raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
                     if not raw_keywords:
                         for line in response.text.split('\n'):
@@ -186,7 +197,7 @@ with col2:
                     keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
                     final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
                     
-                    df = pd.DataFrame({
+                    st.session_state.df_result = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [desc],
                         "Keywords": [final_keywords],
@@ -195,20 +206,23 @@ with col2:
                         "Mature Content": ["No"],
                         "Editorial": ["No"]
                     })
-                    
-                    st.success("🎉 Metadata berhasil disusun!")
-                    st.dataframe(df, use_container_width=True)
-                    
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📥 Download CSV Siap Upload", 
-                        data=csv, 
-                        file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
-                        mime="text/csv",
-                        use_container_width=True
-                    )
+                    st.session_state.filename_result = uploaded_file.name
                 except Exception as e:
                     st.error(f"Terjadi kesalahan pada sistem AI: {e}")
+        
+        # Tampilkan hasil jika sudah digenerate untuk file ini
+        if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
+            st.success("🎉 Metadata berhasil disusun!")
+            st.dataframe(st.session_state.df_result, use_container_width=True)
+            
+            csv = st.session_state.df_result.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Download CSV Siap Upload", 
+                data=csv, 
+                file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
+                mime="text/csv",
+                use_container_width=True
+            )
     else:
         st.markdown("""
         <div style="text-align: center; padding: 10px;">
@@ -216,8 +230,6 @@ with col2:
         </div>
         """, unsafe_allow_html=True)
         st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
-        
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
