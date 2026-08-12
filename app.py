@@ -3,10 +3,10 @@ import pandas as pd
 from PIL import Image
 from google import genai
 
-# Konfigurasi Halaman - Menjadikan Tampilan Lebih Pro
+# Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy | SaaS Premium", page_icon="🚀", layout="wide")
 
-# CSS Styling - Desain Premium SaaS dengan kotak transparan pembungkus kolom
+# CSS Styling - Kotak transparan membungkus penuh kolom kiri & kanan
 st.markdown("""
 <style>
     :root {
@@ -27,8 +27,8 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.1);
     }
     
-    /* Card Styles / Kotak Transparan */
-    .custom-card {
+    /* Membuat kolom otomatis menjadi kotak transparan pembungkus */
+    [data-testid="column"] {
         background-color: var(--card-bg);
         backdrop-filter: blur(10px);
         padding: 25px;
@@ -69,7 +69,6 @@ st.markdown("""
 col1, col2 = st.columns([1, 1.2])
 
 with col1:
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("⚙️ Konfigurasi")
     
     try:
@@ -82,10 +81,8 @@ with col1:
     
     if uploaded_file:
         st.image(uploaded_file, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("📊 Hasil Pemrosesan")
     
     if uploaded_file and api_key:
@@ -143,7 +140,6 @@ with col2:
                     st.error(f"Error: {e}")
     else:
         st.info("Upload foto terlebih dahulu untuk memulai proses SEO.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer Watermark dengan branding baru
+# Footer Watermark
 st.markdown('<div class="footer">© 2026 Nyetok.Kuy - All Rights Reserved | powered by Pungs Creative</div>', unsafe_allow_html=True)
