@@ -7,7 +7,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Utuh
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Pekat
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -75,14 +75,15 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Efek Kaca Transparan yang Membungkus Seluruh Konten di Kolom Kanan */
+    /* Efek Kaca Transparan Pekat yang Membungkus Seluruh Konten di Kolom Kanan */
     [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: rgba(255, 255, 255, 0.07) !important;
         background: rgba(255, 255, 255, 0.07) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        border-radius: 15px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 16px !important;
         padding: 15px !important;
-        backdrop-filter: blur(8px) !important;
-        -webkit-backdrop-filter: blur(8px) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
     }
 
@@ -158,7 +159,7 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    # Kontainer Pembungkus Kaca Transparan yang Utuh
+    # Kontainer Pembungkus Kaca Transparan yang Utuh dan Pekat
     with st.container(border=True):
         if uploaded_file and api_key:
             if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
@@ -171,7 +172,7 @@ with col2:
                         Act as a professional Shutterstock contributor. 
                         Analyze the image and provide metadata in English format:
                         TITLE: [A concise, commercial search-friendly title]
-                        KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords.]
+                        KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords without any markdown symbols.]
                         CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
                         DESCRIPTION: [A detailed commercial description]
                         """
@@ -181,7 +182,7 @@ with col2:
                             contents=[prompt, img]
                         )
                         
-                        # Parsing respons AI yang bersih dari simbol markdown asterisks & keyword kosong
+                        # Parsing respons AI yang bersih dari simbol markdown & keyword kosong
                         data_dict = {}
                         for line in response.text.split('\n'):
                             if ':' in line:
@@ -191,15 +192,17 @@ with col2:
                                 data_dict[clean_key] = clean_val
                                 
                         desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
+                        desc = re.sub(r'[\*]', '', desc)
                         
-                        # Ekstraksi keyword dengan pembersihan regex anti-kosong dan anti-markdown
+                        # Ekstraksi keyword dengan pembersihan total dari simbol asterisks/bold markdown
                         raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
                         if not raw_keywords:
                             for line in response.text.split('\n'):
                                 if 'keyword' in line.lower() and ':' in line:
-                                    raw_keywords = re.sub(r'^[\*\-\#\s]+', '', line.split(':', 1)[1]).strip().replace('[', '').replace(']', '')
+                                    raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
                                     
-                        raw_keywords = re.sub(r'[\*]', '', raw_keywords)
+                        # Bersihkan semua simbol bintang dan markdown yang tersisa
+                        raw_keywords = raw_keywords.replace('**', '').replace('*', '')
                         keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
                         final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
                         
