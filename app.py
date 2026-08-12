@@ -6,13 +6,13 @@ from google import genai
 # Konfigurasi Halaman - Menjadikan Tampilan Lebih Pro
 st.set_page_config(page_title="Nyetok.Kuy | SaaS Premium", page_icon="🚀", layout="wide")
 
-# CSS Styling - Desain Premium SaaS
+# CSS Styling - Desain Premium SaaS dengan kotak transparan pembungkus kolom
 st.markdown("""
 <style>
     :root {
         --primary: #8b5cf6;
         --bg-color: #0f172a;
-        --card-bg: #1e293b;
+        --card-bg: rgba(30, 41, 59, 0.75);
         --text-color: #f8fafc;
     }
     .stApp { background-color: var(--bg-color); color: var(--text-color); }
@@ -27,12 +27,13 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.1);
     }
     
-    /* Card Styles */
+    /* Card Styles / Kotak Transparan */
     .custom-card {
         background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
         padding: 25px;
         border-radius: 16px;
-        border: 1px solid rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
     
@@ -70,7 +71,7 @@ col1, col2 = st.columns([1, 1.2])
 with col1:
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("⚙️ Konfigurasi")
-    # API Key Otomatis (Hidden dari user, hanya tarik dari sistem)
+    
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
@@ -104,18 +105,16 @@ with col2:
                     """
                     
                     response = client.models.generate_content(
-                        model='gemini-3.5-flash',
+                        model='gemini-2.5-flash',
                         contents=[prompt, img]
                     )
                     
-                    # Logic Parsing
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
                             key, val = line.split(':', 1)
                             data_dict[key.strip()] = val.strip()
                             
-                    # Data Processing
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
                     keyword_list = [k.strip() for k in data_dict.get('KEYWORDS', '').split(',') if k.strip()]
                     final_keywords = ','.join(keyword_list[:50])
@@ -146,5 +145,5 @@ with col2:
         st.info("Upload foto terlebih dahulu untuk memulai proses SEO.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer Watermark
-st.markdown('<div class="footer">© 2026 Nyetok.Kuy - All Rights Reserved | Powered by Baginda Raja Kegelapan</div>', unsafe_allow_html=True)
+# Footer Watermark dengan branding baru
+st.markdown('<div class="footer">© 2026 Nyetok.Kuy - All Rights Reserved | powered by Pungs Creative</div>', unsafe_allow_html=True)
