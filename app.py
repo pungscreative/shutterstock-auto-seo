@@ -22,6 +22,18 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
         margin-bottom: 20px; 
     }
+    /* Menyelaraskan warna kotak dalam input agar kontras namun senada */
+    div[data-baseweb="input"] {
+        background-color: rgba(30, 27, 75, 0.5) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+    }
+    /* Menyelaraskan warna area dalam file uploader */
+    div[data-testid="stFileUploader"] section {
+        background-color: rgba(30, 27, 75, 0.5) !important;
+        border: 1px dashed rgba(255, 255, 255, 0.3) !important;
+        border-radius: 12px !important;
+    }
     .glass-card { 
         background: rgba(255, 255, 255, 0.08); 
         backdrop-filter: blur(20px); 
@@ -40,10 +52,7 @@ st.title("✨ Nyetok.Kuy")
 col1, col2 = st.columns([1, 1.5])
 
 with col1:
-    # Kotak transparan otomatis membungkus label dan input API Key
     api_key = st.text_input("Masukkan API Key (AQ...):", type="password", placeholder="Paste API Key di sini...")
-    
-    # Kotak transparan otomatis membungkus label dan upload foto
     uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         st.image(uploaded_file, use_container_width=True)
