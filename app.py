@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Desain Kartu Kolom Ganda & Kotak Dalam (Inner Box) ala Gambar Referensi
+# CSS Styling - Tata Letak Kartu Kaca & Inner Box yang Presisi Sesuai Permintaan
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -52,33 +52,32 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
-    /* Kartu Kolom Utama (Efek Kaca Pembungkus Besar) */
-    .card-column {
-        background: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        height: 100%;
+    /* Kolom Utama sebagai Kartu Kaca Transparan Besar */
+    [data-testid="column"] {
+        background: rgba(255, 255, 255, 0.45) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
+        border-radius: 20px !important;
+        padding: 25px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
     }
 
-    /* Kotak Dalam (Inner Box) untuk Konten Widget */
-    .inner-box {
-        background: rgba(255, 255, 255, 0.55);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 15px;
-    }
-
+    /* Judul Kolom */
     .card-title {
         font-family: 'Fredoka', sans-serif;
         font-weight: 600;
         font-size: 1.15rem;
         color: #1e1b4b;
-        margin-bottom: 0px;
+        margin-bottom: 15px;
+    }
+
+    /* Kotak Inner Box untuk File Uploader & Area Hasil AI */
+    [data-testid="stFileUploader"], .inner-result-box {
+        background: rgba(255, 255, 255, 0.55) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        border-radius: 15px !important;
+        padding: 15px !important;
     }
 
     .stFileUploader label p {
@@ -100,10 +99,8 @@ st.markdown("""
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown('<div class="card-column">', unsafe_allow_html=True)
     st.markdown('<div class="card-title">⚙️ Konfigurasi & Upload</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="inner-box">', unsafe_allow_html=True)
     api_key = None
     try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -118,14 +115,11 @@ with col1:
     
     if uploaded_file:
         st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="card-column">', unsafe_allow_html=True)
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="inner-box">', unsafe_allow_html=True)
+    st.markdown('<div class="inner-result-box">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
             with st.spinner("✨ AI sedang meracik metadata terbaik..."):
@@ -159,8 +153,6 @@ with col2:
         </div>
         """, unsafe_allow_html=True)
         st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
