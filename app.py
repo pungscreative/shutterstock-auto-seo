@@ -3,10 +3,10 @@ import pandas as pd
 from PIL import Image
 from google import genai
 
-# Konfigurasi Halaman
+# Konfigurasi Halaman - Menjadikan Tampilan Lebih Pro
 st.set_page_config(page_title="Nyetok.Kuy | SaaS Premium", page_icon="🚀", layout="wide")
 
-# CSS Styling - Kotak transparan membungkus penuh kolom kiri & kanan
+# CSS Styling - Desain Premium SaaS dengan kotak transparan pembungkus kolom
 st.markdown("""
 <style>
     :root {
@@ -102,7 +102,7 @@ with col2:
                     """
                     
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.5-flash',
                         contents=[prompt, img]
                     )
                     
