@@ -6,29 +6,58 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Dasar yang Aman & Stabil (Tanpa merusak elemen internal Streamlit)
+# CSS Styling - Gradasi Judul & Subteks serta Efek Kaca Transparan yang Seragam
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
     .stApp {
         background: linear-gradient(135deg, #c7d2fe 0%, #e9d5ff 35%, #fbcfe8 70%, #fed7aa 100%);
         background-attachment: fixed;
     }
+    
+    /* Efek Kaca Transparan yang Seragam untuk Judul & Kolom */
+    .hero-container, .glass-box {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
     .hero-container {
         text-align: center;
         padding: 30px;
-        background: rgba(255, 255, 255, 0.4);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 20px;
         margin-bottom: 25px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
-    .gradient-title {
+    
+    .glass-box {
+        padding: 25px;
+        height: 100%;
+    }
+    
+    /* Font Tebal Gemuk dengan Gradasi untuk Judul & Subteks */
+    .gradient-title, .gradient-heading {
+        font-family: 'Fredoka', sans-serif;
         font-weight: 700;
-        font-size: 2.5rem;
         background: linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+    }
+    
+    .gradient-title {
+        font-size: 2.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .gradient-heading {
+        font-size: 1.25rem;
+        margin-bottom: 20px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -44,7 +73,8 @@ st.markdown("""
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.subheader("⚙️ Konfigurasi & Upload")
+    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
+    st.markdown('<h3 class="gradient-heading">⚙️ Konfigurasi & Upload</h3>', unsafe_allow_html=True)
     
     # Ambil API Key dari secrets atau sediakan input manual jika gagal
     api_key = None
@@ -60,11 +90,12 @@ with col1:
     uploaded_file = st.file_uploader("Upload Foto Produk", type=["jpg", "jpeg", "png"])
     
     if uploaded_file:
-        # Menggunakan parameter standar use_container_width agar aman dari error versi
         st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.subheader("📊 Hasil Pemrosesan AI")
+    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
+    st.markdown('<h3 class="gradient-heading">📊 Hasil Pemrosesan AI</h3>', unsafe_allow_html=True)
     
     if uploaded_file and api_key:
         if st.button("🚀 Generate Metadata SEO", type="primary"):
@@ -87,7 +118,6 @@ with col2:
                         contents=[prompt, img]
                     )
                     
-                    # Parsing hasil teks sederhana yang aman
                     st.success("🎉 Metadata berhasil disusun!")
                     st.text_area("Hasil Lengkap AI:", response.text, height=200)
                     
@@ -95,6 +125,7 @@ with col2:
                     st.error(f"Terjadi kesalahan pada sistem AI: {e}")
     else:
         st.info("💡 Silakan unggah foto dan pastikan API Key sudah tersedia untuk mengaktifkan tombol.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
