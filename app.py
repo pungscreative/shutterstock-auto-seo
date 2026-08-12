@@ -10,20 +10,8 @@ st.set_page_config(page_title="Shutterstock Pro Studio", page_icon="✨", layout
 # CSS Estetik Glassmorphism
 st.markdown("""
 <style>
-    .stApp { 
-        background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%), 
-                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
-        color: #f8fafc; 
-    }
-    .glass-card { 
-        background: rgba(255, 255, 255, 0.03); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.08); 
-        border-radius: 24px; 
-        padding: 30px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
-    }
-    .stButton>button { width: 100%; border-radius: 12px; background: #6366f1; color: white; }
+    .stApp { background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%), linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); color: #f8fafc; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -43,30 +31,23 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Gemini 1.5 Flash sedang meracik metadata..."):
+            with st.spinner("✨ Gemini sedang meracik metadata..."):
                 try:
                     genai.configure(api_key=api_key)
+                    # Menggunakan model 1.5-flash yang tersedia secara resmi di API
                     model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     img = Image.open(uploaded_file)
-                    prompt = """
-                    Act as a professional Shutterstock contributor. 
-                    Analyze the image and provide metadata in English:
-                    TITLE: [A concise, commercial search-friendly title]
-                    KEYWORDS: [50 relevant comma-separated keywords]
-                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A detailed commercial description]
-                    """
+                    prompt = "Analyze this image for Shutterstock. Provide TITLE, KEYWORDS (50 total, comma-separated), CATEGORY, and DESCRIPTION in English."
                     response = model.generate_content([prompt, img])
                     
-                    # Parsing hasil dari AI
+                    # Parsing hasil
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
-                            key, val = line.split(':', 1)
-                            data_dict[key.strip()] = val.strip()
+                            k, v = line.split(':', 1)
+                            data_dict[k.strip()] = v.strip()
                     
-                    # Membuat DataFrame
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
@@ -79,13 +60,8 @@ with col2:
                     
                     st.success("✅ Metadata berhasil dibuat!")
                     st.dataframe(df)
-                    
-                    # Tombol Download
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download CSV", data=csv, file_name="shutterstock_upload.csv", mime="text/csv")
+                    st.download_button("📥 Download CSV", data=df.to_csv(index=False), file_name="shutterstock_upload.csv", mime="text/csv")
                 
                 except Exception as e:
-                    st.error(f"Terjadi kesalahan: {e}")
-    else:
-        st.info("Silakan masukkan API Key dan upload gambar untuk memulai.")
+                    st.error(f"Error API: {e}. Pastikan API Key valid dan model 'gemini-1.5-flash' diizinkan.")
     st.markdown('</div>', unsafe_allow_html=True)
