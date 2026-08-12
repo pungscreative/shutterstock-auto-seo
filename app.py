@@ -7,7 +7,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Terisi Penuh
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Sempurna
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -75,7 +75,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Efek Kaca Transparan Terisi Penuh yang Membungkus Seluruh Konten di Kolom Kanan */
+    /* Efek Kaca Transparan Penuh pada Kontainer Kanan (Persis seperti sebelah kiri) */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: rgba(255, 255, 255, 0.07) !important;
         background: rgba(255, 255, 255, 0.07) !important;
@@ -85,6 +85,12 @@ st.markdown("""
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+    }
+
+    /* Memastikan elemen dalam kontainer tidak menimpa background kaca */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: transparent !important;
+        background-color: transparent !important;
     }
 
     [data-testid="stFileUploader"] {
@@ -159,7 +165,7 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
-    # Kontainer Pembungkus Kaca Transparan yang Utuh dan Terisi Penuh
+    # Kontainer Pembungkus Kaca Transparan Penuh
     with st.container(border=True):
         if uploaded_file and api_key:
             if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
