@@ -42,58 +42,74 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Mendeteksi model aktif & meracik metadata..."):
+            with st.spinner("✨ Menghubungkan ke server & meracik metadata..."):
                 try:
                     genai.configure(api_key=api_key)
                     
-                    # Deteksi otomatis model yang mendukung generateContent agar kebal terhadap perubahan nama model oleh Google
-                    valid_model = None
-                    for m in genai.list_models():
-                        if 'generateContent' in m.supported_generation_methods:
-                            valid_model = m.name
+                    # Daftar model prioritas yang akan dicoba secara otomatis
+                    candidate_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro-vision']
+                    model = None
+                    active_model_name = ""
+                    
+                    # Coba deteksi model otomatis dari server terlebih dahulu
+                    try:
+                        for m in genai.list_models():
+                            if 'generateContent' in m.supported_generation_methods:
+                                candidate_models.insert(0, m.name)
+                    except Exception:
+                        pass
+                    
+                    # Lakukan loop untuk mencari model yang diizinkan oleh API key
+                    error_log = []
+                    for model_name in candidate_models:
+                        try:
+                            test_model = genai.GenerativeModel(model_name)
+                            # Test kecil atau langsung set jika inisialisasi berhasil
+                            model = test_model
+                            active_model_name = model_name
                             break
+                        except Exception as em:
+                            error_log.append(str(em))
+                            continue
                     
-                    if not valid_model:
-                        # Fallback manual jika deteksi gagal
-                        valid_model = 'gemini-1.5-flash'
-                    
-                    model = genai.GenerativeModel(valid_model)
-                    
-                    img = Image.open(uploaded_file)
-                    prompt = """
-                    Act as a professional Shutterstock contributor. 
-                    Analyze the image and provide metadata in English:
-                    TITLE: [A concise, commercial search-friendly title]
-                    KEYWORDS: [50 relevant comma-separated keywords]
-                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
-                    DESCRIPTION: [A detailed commercial description]
-                    """
-                    response = model.generate_content([prompt, img])
-                    
-                    # Parsing hasil dari AI
-                    data_dict = {}
-                    for line in response.text.split('\n'):
-                        if ':' in line:
-                            key, val = line.split(':', 1)
-                            data_dict[key.strip()] = val.strip()
-                    
-                    # Membuat DataFrame sesuai format standar Shutterstock
-                    df = pd.DataFrame({
-                        "Filename": [uploaded_file.name],
-                        "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
-                        "Keywords": [data_dict.get('KEYWORDS', '')],
-                        "Categories": [data_dict.get('CATEGORY', 'Nature')],
-                        "Editorial": [0],
-                        "Date Created": [datetime.now().strftime("%Y-%m-%d")],
-                        "Location": ["Mataram"]
-                    })
-                    
-                    st.success(f"✅ Metadata & CSV Berhasil Digenerate menggunakan model `{valid_model}`!")
-                    st.dataframe(df)
-                    
-                    # Tombol Download CSV
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
+                    if not model:
+                        st.error("⚠️ Tidak ada model yang kompatibel dengan API Key ini. Pastikan kunci API aktif.")
+                    else:
+                        img = Image.open(uploaded_file)
+                        prompt = """
+                        Act as a professional Shutterstock contributor. 
+                        Analyze the image and provide metadata in English:
+                        TITLE: [A concise, commercial search-friendly title]
+                        KEYWORDS: [50 relevant comma-separated keywords]
+                        CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
+                        DESCRIPTION: [A detailed commercial description]
+                        """
+                        response = model.generate_content([prompt, img])
+                        
+                        # Parsing hasil dari AI
+                        data_dict = {}
+                        for line in response.text.split('\n'):
+                            if ':' in line:
+                                key, val = line.split(':', 1)
+                                data_dict[key.strip()] = val.strip()
+                        
+                        # Membuat DataFrame sesuai format standar Shutterstock
+                        df = pd.DataFrame({
+                            "Filename": [uploaded_file.name],
+                            "Description": [f"{data_dict.get('TITLE', 'Image')} {data_dict.get('DESCRIPTION', '')}"],
+                            "Keywords": [data_dict.get('KEYWORDS', '')],
+                            "Categories": [data_dict.get('CATEGORY', 'Nature')],
+                            "Editorial": [0],
+                            "Date Created": [datetime.now().strftime("%Y-%m-%d")],
+                            "Location": ["Mataram"]
+                        })
+                        
+                        st.success(f"✅ Metadata & CSV Berhasil Digenerate (Model: `{active_model_name}`)!")
+                        st.dataframe(df)
+                        
+                        # Tombol Download CSV
+                        csv = df.to_csv(index=False).encode('utf-8')
+                        st.download_button("📥 Download File CSV Shutterstock", data=csv, file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", mime="text/csv")
                 
                 except Exception as e:
                     st.error(f"Terjadi kesalahan sistem: {e}")
