@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Mengembalikan Estetika Liquid Glassmorphic Penuh Sesuai Gambar 2
+# CSS Styling - Menggunakan Wadah Kustom Aman (Tanpa Merusak Selector Kolom Streamlit)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -88,25 +88,26 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Mengembalikan Kotak Kaca Transparan Penuh (Liquid Glass UI Kit) pada Kolom */
-    [data-testid="column"] {
-        background: rgba(255, 255, 255, 0.3) !important;
-        backdrop-filter: blur(25px) !important;
-        -webkit-backdrop-filter: blur(25px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.5) !important;
-        border-radius: 24px !important;
-        padding: 30px !important;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+    /* Kotak Kaca Transparan Penuh (Liquid Glass UI Kit) yang Aman */
+    .glass-box {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
         position: relative;
         z-index: 1;
         transition: all 0.3s ease;
+        height: 100%;
     }
-    [data-testid="column"]:hover {
-        border-color: rgba(255, 255, 255, 0.8) !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    .glass-box:hover {
+        border-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
     
-    /* Heading dalam Kolom */
+    /* Heading dalam Kotak */
     h3 {
         font-weight: 700 !important;
         letter-spacing: -0.02em;
@@ -143,10 +144,6 @@ st.markdown("""
         border: 2px dashed rgba(255, 255, 255, 0.5);
         border-radius: 16px;
         padding: 10px;
-        transition: border-color 0.2s;
-    }
-    .stFileUploader:hover {
-        border-color: rgba(255, 255, 255, 0.9);
     }
     
     /* Footer */
@@ -175,6 +172,7 @@ st.markdown("""
 col1, col2 = st.columns([1, 1.2], gap="large")
 
 with col1:
+    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
     st.subheader("⚙️ Konfigurasi & Upload")
     
     try:
@@ -187,8 +185,10 @@ with col1:
     
     if uploaded_file:
         st.image(uploaded_file, width='stretch', caption="Pratinjau Foto")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
+    st.markdown('<div class="glass-box">', unsafe_allow_html=True)
     st.subheader("📊 Hasil Pemrosesan AI")
     
     if uploaded_file and api_key:
@@ -246,6 +246,7 @@ with col2:
                     st.error(f"Error: {e}")
     else:
         st.info("💡 Silakan unggah foto terlebih dahulu di kolom sebelah kiri untuk mengaktifkan mesin AI.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer Watermark
 st.markdown('<div class="footer">© 2026 Nyetok.Kuy - All Rights Reserved | powered by Pungs Creative</div>', unsafe_allow_html=True)
