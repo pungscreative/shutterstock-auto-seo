@@ -42,12 +42,22 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Gemini 2.0 Flash sedang meracik metadata tingkat tinggi..."):
+            with st.spinner("✨ Mendeteksi model aktif & meracik metadata..."):
                 try:
                     genai.configure(api_key=api_key)
                     
-                    # Menggunakan model gemini-2.0-flash yang didukung penuh oleh API key saat ini
-                    model = genai.GenerativeModel('gemini-2.0-flash')
+                    # Deteksi otomatis model yang mendukung generateContent agar kebal terhadap perubahan nama model oleh Google
+                    valid_model = None
+                    for m in genai.list_models():
+                        if 'generateContent' in m.supported_generation_methods:
+                            valid_model = m.name
+                            break
+                    
+                    if not valid_model:
+                        # Fallback manual jika deteksi gagal
+                        valid_model = 'gemini-1.5-flash'
+                    
+                    model = genai.GenerativeModel(valid_model)
                     
                     img = Image.open(uploaded_file)
                     prompt = """
@@ -78,7 +88,7 @@ with col2:
                         "Location": ["Mataram"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate oleh Gemini 2.0 Flash!")
+                    st.success(f"✅ Metadata & CSV Berhasil Digenerate menggunakan model `{valid_model}`!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
