@@ -57,9 +57,9 @@ with col2:
                     DESCRIPTION: [A detailed commercial description]
                     """
                     
-                    # Pemanggilan model dengan google-genai
+                    # Menggunakan model standar yang diizinkan untuk semua akun (gemini-1.5-flash)
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-1.5-flash',
                         contents=[prompt, img]
                     )
                     
