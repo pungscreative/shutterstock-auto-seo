@@ -46,13 +46,14 @@ with col2:
                     client = genai.Client(api_key=api_key.strip())
                     img = Image.open(uploaded_file)
                     
-                    # Prompt dengan penegasan batas kata kunci
+                    # Prompt diperbarui: Meminta Kategori 1 dan Kategori 2 secara terpisah
                     prompt = """
                     Act as a professional Shutterstock contributor. 
                     Analyze the image and provide metadata in English:
                     TITLE: [A concise, commercial search-friendly title]
                     KEYWORDS: [Provide EXACTLY 45 relevant comma-separated keywords. DO NOT EXCEED 50.]
-                    CATEGORY: [Pick one: Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink]
+                    CATEGORY 1: [Pick the most relevant category (e.g., Animals/Wildlife, Nature, Backgrounds, People, Technology, Food/Drink)]
+                    CATEGORY 2: [Pick a SECOND relevant category, MUST be different from Category 1]
                     DESCRIPTION: [A detailed commercial description, minimum 6 words]
                     """
                     
@@ -75,25 +76,32 @@ with col2:
                         
                     # 2. PENGAMAN KATA KUNCI MUTLAK (Maksimal 50 kata)
                     raw_keywords = data_dict.get('KEYWORDS', '')
-                    # Pecah berdasarkan koma, bersihkan spasi
                     keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
-                    # Paksa potong hanya ambil 50 kata pertama jika AI membandel
                     keyword_list = keyword_list[:50]
                     final_keywords = ','.join(keyword_list)
                     
-                    # 3. PEMBENTUKAN CSV SESUAI STANDAR SHUTTERSTOCK
-                    # Header harus persis sama dengan aturan impor CSV Shutterstock
+                    # 3. PENGGABUNGAN KATEGORI 1 & 2
+                    cat1 = data_dict.get('CATEGORY 1', 'Nature').strip()
+                    cat2 = data_dict.get('CATEGORY 2', '').strip()
+                    
+                    # Memastikan Kategori 2 ada dan tidak sama persis dengan Kategori 1
+                    if cat2 and cat2.lower() != "none" and cat2.lower() != cat1.lower():
+                        final_categories = f"{cat1}, {cat2}"
+                    else:
+                        final_categories = cat1
+                    
+                    # 4. PEMBENTUKAN CSV SESUAI STANDAR SHUTTERSTOCK
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
                         "Description": [desc],
                         "Keywords": [final_keywords],
-                        "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
+                        "Categories": [final_categories],
                         "Illustration": ["No"],
                         "Mature Content": ["No"],
                         "Editorial": ["No"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
+                    st.success("✅ Metadata & CSV Berhasil Digenerate dengan 2 Kategori Sekaligus!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
