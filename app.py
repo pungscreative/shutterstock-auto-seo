@@ -11,12 +11,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS: Mengadopsi Gaya 3D Glassmorphism & Kosmik dari Referensi
+# Custom CSS: Gaya 3D Glassmorphism & Kosmik
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Global Cosmic Background */
     .stApp {
         background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.25) 0%, transparent 40%),
                     radial-gradient(circle at 90% 80%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
@@ -25,10 +24,8 @@ st.markdown("""
         color: #f8fafc;
     }
 
-    /* Hide Streamlit Default Header/Footer elements */
     header, footer {visibility: hidden;}
 
-    /* Glassmorphism Hero Banner */
     .hero-card {
         background: rgba(255, 255, 255, 0.04);
         backdrop-filter: blur(25px);
@@ -40,7 +37,6 @@ st.markdown("""
         margin-bottom: 30px;
     }
 
-    /* Glassmorphic Container Cards */
     .glass-card {
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(20px);
@@ -52,7 +48,6 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* Glowing Gradient Typography */
     .gradient-title {
         font-size: 2.8rem;
         font-weight: 800;
@@ -69,7 +64,6 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* Input & Textarea Styling */
     .stTextInput>div>div>input {
         background: rgba(15, 23, 42, 0.6) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -77,12 +71,7 @@ st.markdown("""
         border-radius: 14px !important;
         padding: 12px 18px !important;
     }
-    .stTextInput>div>div>input:focus {
-        border-color: #8b5cf6 !important;
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.3) !important;
-    }
 
-    /* Custom Futuristic Button */
     .stButton>button {
         background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
         color: white;
@@ -98,10 +87,8 @@ st.markdown("""
     .stButton>button:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(168, 85, 247, 0.6);
-        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
     }
 
-    /* Label Styling */
     label, .stFileUploader label {
         color: #e2e8f0 !important;
         font-weight: 600 !important;
@@ -109,7 +96,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Hero Section ala Referensi 3D Kosmik
+# Hero Section
 st.markdown("""
     <div class="hero-card">
         <div class="gradient-title">Shutterstock Pro Studio</div>
@@ -119,7 +106,6 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Layout Utama 2 Kolom (Estetik & Modern)
 col1, col2 = st.columns([1, 1.2], gap="large")
 
 with col1:
@@ -154,12 +140,13 @@ with col2:
                         model = genai.GenerativeModel('gemini-3.5-flash')
                         
                         prompt = """
-                        Act as an elite Shutterstock Microstock Expert. Analyze this image thoroughly to maximize downloads.
+                        Act as an elite Shutterstock Microstock Expert. Analyze this image thoroughly to maximize global sales.
+                        CRITICAL REQUIREMENT: The output MUST be entirely in ENGLISH because Shutterstock global marketplace requires English metadata.
                         Return ONLY this exact structured format with labels:
-                        TITLE: [A concise, commercial search-friendly title]
-                        KEYWORDS: [Exactly 50 relevant commercial keywords separated by commas, sorted from specific subject to abstract concept]
-                        CATEGORY: [Choose 1 best matching Shutterstock category from standard list e.g. Business, Technology, Nature, Backgrounds, People]
-                        DESCRIPTION: [A clear, highly descriptive commercial description]
+                        TITLE: [A concise, commercial search-friendly title in English]
+                        KEYWORDS: [Exactly 50 relevant commercial keywords in English separated by commas, sorted from specific subject to abstract concept]
+                        CATEGORY: [Choose 1 best matching Shutterstock category from standard list e.g. Animals/Wildlife, Nature, Backgrounds, People]
+                        DESCRIPTION: [A clear, highly descriptive commercial description in English]
                         """
                         
                         response = model.generate_content([prompt, image])
@@ -177,11 +164,11 @@ with col2:
                             "Filename": [uploaded_file.name],
                             "Description": [f"{data_dict.get('TITLE', '')} {data_dict.get('DESCRIPTION', '')}"],
                             "Keywords": [data_dict.get('KEYWORDS', '')],
-                            "Categories": [data_dict.get('CATEGORY', 'Backgrounds/Textures')]
+                            "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')]
                         }
                         df = pd.DataFrame(csv_data)
                         
-                        st.success("✅ SEO & CSV Berhasil Digenerate oleh Gemini 3.5 Flash!")
+                        st.success("✅ SEO & CSV Berhasil Digenerate oleh Gemini 3.5 Flash (Standar Internasional Shutterstock)!")
                         
                         # Preview Hasil Tabel
                         st.dataframe(df, use_container_width=True)
