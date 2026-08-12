@@ -1,6 +1,7 @@
 import streamlit as st
 import base64
 from openai import OpenAI
+from PIL import Image
 
 st.set_page_config(page_title="Shutterstock Auto SEO", page_icon="📸", layout="centered")
 
@@ -13,7 +14,9 @@ api_key = st.text_input("OpenAI API Key:", type="password")
 uploaded_file = st.file_uploader("Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Preview Foto", use_column_width=True)
+    # PERBAIKAN: Membaca gambar dengan library PIL (Pillow)
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Preview Foto", use_container_width=True)
 
     if st.button("Automasi Data SEO Shutterstock"):
         if not api_key:
@@ -22,6 +25,9 @@ if uploaded_file is not None:
             with st.spinner("🤖 AI sedang menganalisis foto, mencari tren pasar, dan menyusun keyword..."):
                 try:
                     client = OpenAI(api_key=api_key)
+                    
+                    # Reset pointer file gambar setelah dibaca oleh PIL
+                    uploaded_file.seek(0)
                     base64_image = base64.b64encode(uploaded_file.getvalue()).decode("utf-8")
                     
                     prompt = """
