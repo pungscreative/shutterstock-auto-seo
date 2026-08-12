@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient & Dark Glassmorphism
+# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Tombol Matching
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -74,7 +74,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Kotak Inner Box untuk File Uploader & Area Hasil AI */
+    /* Kotak Inner Box untuk File Uploader & Area Hasil AI Menyeluruh */
     [data-testid="stFileUploader"], .inner-result-box {
         background: rgba(255, 255, 255, 0.07) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -85,6 +85,22 @@ st.markdown("""
     .stFileUploader label p {
         color: #f8fafc !important;
         font-weight: 700 !important;
+    }
+    
+    /* Tombol Utama (Generate & Download) Matching dengan Background Gelap */
+    .stButton>button {
+        background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #a855f7 100%) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6) !important;
     }
     
     p, span, label {
@@ -125,7 +141,9 @@ with col1:
 with col2:
     st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
     
+    # Membungkus seluruh area hasil dan aksi di kolom kanan dengan efek kaca transparan
     st.markdown('<div class="inner-result-box">', unsafe_allow_html=True)
+    
     if uploaded_file and api_key:
         if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
             with st.spinner("✨ AI sedang meracik metadata terbaik..."):
@@ -147,15 +165,26 @@ with col2:
                         contents=[prompt, img]
                     )
                     
+                    # Parsing respons AI yang lebih aman & tangguh terhadap keyword kosong
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
-                            key, val = line.split(':', 1)
-                            data_dict[key.strip()] = val.strip()
+                            parts = line.split(':', 1)
+                            k_key = parts[0].strip().upper()
+                            k_val = parts[1].strip().replace('[', '').replace(']', '')
+                            data_dict[k_key] = k_val
                             
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
-                    keyword_list = [k.strip() for k in data_dict.get('KEYWORDS', '').split(',') if k.strip()]
-                    final_keywords = ','.join(keyword_list[:50])
+                    
+                    # Ekstraksi keyword dengan pengaman fallback
+                    raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
+                    if not raw_keywords:
+                        for line in response.text.split('\n'):
+                            if 'keyword' in line.lower() and ':' in line:
+                                raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
+                                
+                    keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
+                    final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
                     
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
@@ -187,6 +216,7 @@ with col2:
         </div>
         """, unsafe_allow_html=True)
         st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
+        
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
