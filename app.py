@@ -7,7 +7,7 @@ import io
 st.set_page_config(page_title="Shutterstock Auto SEO & CSV", page_icon="📸", layout="wide")
 
 st.title("📸 Shutterstock Auto-SEO & CSV Generator")
-st.markdown("Upload foto, AI akan membuatkan metadata dan **file CSV siap upload** ke Shutterstock.")
+st.markdown("Upload foto, AI **Gemini 3.5 Flash** akan membuatkan metadata dan **file CSV siap upload** ke Shutterstock.")
 
 api_key = st.text_input("Google Gemini API Key:", type="password")
 uploaded_file = st.file_uploader("Pilih Foto", type=["jpg", "jpeg", "png"])
@@ -20,11 +20,11 @@ if uploaded_file is not None:
         if not api_key:
             st.error("Masukkan API Key terlebih dahulu!")
         else:
-            with st.spinner("🤖 AI sedang memproses..."):
+            with st.spinner("🤖 Gemini 3.5 Flash sedang memproses..."):
                 try:
                     genai.configure(api_key=api_key)
-                    # Menggunakan model stabil untuk kompatibilitas tinggi
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    # PERBAIKAN: Menggunakan model gemini-3.5-flash
+                    model = genai.GenerativeModel('gemini-3.5-flash')
                     
                     prompt = """
                     Act as a Shutterstock Microstock Expert. Analyze the image.
@@ -55,7 +55,7 @@ if uploaded_file is not None:
                     df = pd.DataFrame(csv_data)
                     
                     # Tampilkan preview di web
-                    st.success("✅ SEO Berhasil dibuat!")
+                    st.success("✅ SEO & CSV Berhasil dibuat dengan Gemini 3.5 Flash!")
                     st.dataframe(df)
                     
                     # Tombol Download CSV
