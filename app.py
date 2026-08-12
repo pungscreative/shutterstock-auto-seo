@@ -6,7 +6,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Efek Kaca Membungkus Kolom Secara Utuh & Gradasi Judul
+# CSS Styling - Perbaikan Warna Icon, Kontras Label, & Kaca Transparan Menyeluruh
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -33,7 +33,7 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
     
-    /* Efek Kaca Transparan yang Membungkus Seluruh Kolom (Merangkul Isi Kolom Utuh) */
+    /* Efek Kaca Transparan Membungkus Utuh Seluruh Kolom */
     [data-testid="column"] {
         background: rgba(255, 255, 255, 0.4) !important;
         backdrop-filter: blur(10px) !important;
@@ -44,23 +44,34 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
     }
     
-    /* Font Tebal Gemuk dengan Gradasi untuk Judul & Subteks Kolom */
-    .gradient-title, .gradient-heading {
+    /* Font Tebal Gemuk dengan Gradasi untuk Judul Utama */
+    .gradient-title {
         font-family: 'Fredoka', sans-serif;
         font-weight: 700;
+        font-size: 2.5rem;
         background: linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-    
-    .gradient-title {
-        font-size: 2.5rem;
         margin-bottom: 5px;
     }
     
+    /* Gradasi Teks Heading Kolom (Tanpa Mengubah Warna Icon/Emoji Asli) */
     .gradient-heading {
+        font-family: 'Fredoka', sans-serif;
+        font-weight: 700;
         font-size: 1.25rem;
-        margin-bottom: 20px;
+        background: linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    
+    /* Kontras Tinggi untuk Label Teks Upload Foto */
+    .stFileUploader label p {
+        color: #1e1b4b !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -76,7 +87,8 @@ st.markdown("""
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown('<h3 class="gradient-heading">⚙️ Konfigurasi & Upload</h3>', unsafe_allow_html=True)
+    # Heading dengan Icon Warna Asli & Teks Gradasi
+    st.markdown('<div><span>⚙️</span> <span class="gradient-heading">Konfigurasi & Upload</span></div>', unsafe_allow_html=True)
     
     api_key = None
     try:
@@ -94,7 +106,8 @@ with col1:
         st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
 
 with col2:
-    st.markdown('<h3 class="gradient-heading">📊 Hasil Pemrosesan AI</h3>', unsafe_allow_html=True)
+    # Heading dengan Icon Warna Asli & Teks Gradasi
+    st.markdown('<div><span>📊</span> <span class="gradient-heading">Hasil Pemrosesan AI</span></div>', unsafe_allow_html=True)
     
     if uploaded_file and api_key:
         if st.button("🚀 Generate Metadata SEO", type="primary"):
