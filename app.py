@@ -42,9 +42,9 @@ with col2:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if uploaded_file and api_key:
         if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Gemini sedang meracik metadata..."):
+            with st.spinner("✨ Menghubungkan ke Interactions API terbaru..."):
                 try:
-                    # Inisialisasi klien resmi google-genai
+                    # Inisialisasi menggunakan Client SDK baru (google-genai)
                     client = genai.Client(api_key=api_key)
                     
                     img = Image.open(uploaded_file)
@@ -57,9 +57,9 @@ with col2:
                     DESCRIPTION: [A detailed commercial description]
                     """
                     
-                    # Menggunakan model 'gemini-1.5-flash' yang paling stabil untuk seluruh jenis akun
+                    # Menggunakan string model standar di SDK baru
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.5-flash',
                         contents=[prompt, img]
                     )
                     
