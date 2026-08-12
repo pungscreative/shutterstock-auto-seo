@@ -3,95 +3,93 @@ import pandas as pd
 from PIL import Image
 from google import genai
 
-# Konfigurasi Halaman & Tema Estetik
-st.set_page_config(page_title="Nyetok.Kuy", page_icon="✨", layout="wide")
+# Konfigurasi Halaman - Menjadikan Tampilan Lebih Pro
+st.set_page_config(page_title="Nyetok.Kuy | SaaS Premium", page_icon="🚀", layout="wide")
 
+# CSS Styling - Desain Premium SaaS
 st.markdown("""
 <style>
-    /* Latar Belakang Utama ala Kosmik Ungu Referensi */
-    .stApp { 
-        background: linear-gradient(135deg, #2e1065 0%, #4c1d95 50%, #1e1b4b 100%); 
-        color: #f8fafc; 
+    :root {
+        --primary: #8b5cf6;
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-color: #f8fafc;
+    }
+    .stApp { background-color: var(--bg-color); color: var(--text-color); }
+    
+    /* Header Container */
+    .header-box {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+        border-radius: 20px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255,255,255,0.1);
     }
     
-    /* Mengubah wadah utama Streamlit menjadi Bingkai Kartu Kaca Melayang (Main Window Frame) */
-    .block-container {
-        background: rgba(35, 15, 70, 0.65);
-        backdrop-filter: blur(30px);
-        border: 2px solid rgba(255, 255, 255, 0.22);
-        border-radius: 35px;
-        padding: 40px 50px !important;
-        box-shadow: 0 35px 70px rgba(0, 0, 0, 0.6);
-        margin-top: 35px;
-        margin-bottom: 35px;
-        max-width: 1300px;
+    /* Card Styles */
+    .custom-card {
+        background-color: var(--card-bg);
+        padding: 25px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
-
-    /* Kotak Transparan untuk Input & Upload */
-    .stTextInput, .stFileUploader { 
-        background: rgba(255, 255, 255, 0.06); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.15); 
-        border-radius: 20px; 
-        padding: 20px; 
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); 
-        margin-bottom: 20px; 
-    }
-
-    /* Kotak dalam input API Key agar kembar identik dengan upload foto */
-    div[data-baseweb="input"] {
-        background-color: rgba(20, 18, 45, 0.75) !important;
-        border: 1px dashed rgba(255, 255, 255, 0.3) !important;
-        border-radius: 12px !important;
-    }
-
-    /* Area dalam file uploader */
-    div[data-testid="stFileUploader"] section {
-        background-color: rgba(20, 18, 45, 0.75) !important;
-        border: 1px dashed rgba(255, 255, 255, 0.3) !important;
-        border-radius: 12px !important;
-    }
-
-    /* Kartu Kaca Sisi Kanan */
-    .glass-card { 
-        background: rgba(255, 255, 255, 0.06); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.15); 
-        border-radius: 24px; 
-        padding: 25px; 
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); 
-        margin-bottom: 20px;
-    }
-
-    /* Tombol Utama Bergaya Neon Gradient */
-    .stButton>button { 
-        width: 100%; 
-        border-radius: 14px; 
-        background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6); 
-        color: white; 
-        font-weight: 700; 
-        border: none; 
+    
+    /* Tombol Utama */
+    .stButton>button {
+        width: 100%;
+        background: linear-gradient(90deg, #6366f1, #a855f7);
+        color: white;
+        border: none;
         padding: 12px;
-        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.3s;
     }
+    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4); }
+    
+    /* File Uploader Style */
+    .stFileUploader { background: rgba(255,255,255,0.03); border-radius: 12px; }
+    
+    /* Footer */
+    .footer { text-align: center; color: #64748b; font-size: 12px; margin-top: 50px; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("✨ Nyetok.Kuy")
+# Layout Header
+st.markdown("""
+<div class="header-box">
+    <h1 style="color: white; margin-bottom: 0;">🚀 Nyetok.Kuy Pro</h1>
+    <p style="color: #94a3b8; font-size: 1.1rem;">Sistem Otomatisasi Metadata Stok Foto AI Tingkat Lanjut</p>
+</div>
+""", unsafe_allow_html=True)
 
-col1, col2 = st.columns([1, 1.5])
+col1, col2 = st.columns([1, 1.2])
 
 with col1:
-    api_key = st.text_input("Masukkan API Key (AQ...):", type="password", placeholder="Paste API Key di sini...")
-    uploaded_file = st.file_uploader("Upload Foto", type=["jpg", "jpeg", "png"])
+    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
+    st.subheader("⚙️ Konfigurasi")
+    # API Key Otomatis (Hidden dari user, hanya tarik dari sistem)
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        api_key = None
+        st.error("⚠️ API Key tidak terkonfigurasi. Silakan hubungi admin.")
+    
+    uploaded_file = st.file_uploader("Upload Foto Produk", type=["jpg", "jpeg", "png"], help="Maksimal 200MB per file")
+    
     if uploaded_file:
         st.image(uploaded_file, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
+    st.subheader("📊 Hasil Pemrosesan")
+    
     if uploaded_file and api_key:
-        if st.button("Generate SEO Metadata & CSV"):
-            with st.spinner("✨ Menghubungkan ke Gemini 3.5 Flash..."):
+        if st.button("Generate Metadata SEO"):
+            with st.spinner("Menganalisis gambar dengan kecerdasan buatan..."):
                 try:
                     client = genai.Client(api_key=api_key.strip())
                     img = Image.open(uploaded_file)
@@ -110,20 +108,17 @@ with col2:
                         contents=[prompt, img]
                     )
                     
+                    # Logic Parsing
                     data_dict = {}
                     for line in response.text.split('\n'):
                         if ':' in line:
                             key, val = line.split(':', 1)
                             data_dict[key.strip()] = val.strip()
                             
+                    # Data Processing
                     desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
-                    if len(desc.split()) < 5:
-                        desc += " high quality premium stock photography"
-                        
-                    raw_keywords = data_dict.get('KEYWORDS', '')
-                    keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
-                    keyword_list = keyword_list[:50]
-                    final_keywords = ','.join(keyword_list)
+                    keyword_list = [k.strip() for k in data_dict.get('KEYWORDS', '').split(',') if k.strip()]
+                    final_keywords = ','.join(keyword_list[:50])
                     
                     df = pd.DataFrame({
                         "Filename": [uploaded_file.name],
@@ -135,19 +130,21 @@ with col2:
                         "Editorial": ["No"]
                     })
                     
-                    st.success("✅ Metadata & CSV Berhasil Digenerate!")
-                    st.dataframe(df)
+                    st.success("✅ Metadata berhasil disusun!")
+                    st.dataframe(df, use_container_width=True)
                     
                     csv = df.to_csv(index=False).encode('utf-8')
                     st.download_button(
-                        label="📥 Download File CSV Shutterstock", 
+                        label="📥 Download CSV Siap Upload", 
                         data=csv, 
-                        file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_shutterstock.csv", 
+                        file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
                         mime="text/csv"
                     )
-                
                 except Exception as e:
-                    st.error(f"Terjadi kesalahan sistem: {e}")
+                    st.error(f"Error: {e}")
     else:
-        st.info("Silakan masukkan API Key dan upload foto di sebelah kiri untuk memulai.")
+        st.info("Upload foto terlebih dahulu untuk memulai proses SEO.")
     st.markdown('</div>', unsafe_allow_html=True)
+
+# Footer Watermark
+st.markdown('<div class="footer">© 2026 Nyetok.Kuy - All Rights Reserved | Powered by Baginda Raja Kegelapan</div>', unsafe_allow_html=True)
