@@ -22,15 +22,15 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
         margin-bottom: 20px; 
     }
-    /* Menyelaraskan warna kotak dalam input agar kontras namun senada */
+    /* Menyelaraskan warna kotak dalam input API Key agar sama persis dengan upload foto */
     div[data-baseweb="input"] {
-        background-color: rgba(30, 27, 75, 0.5) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
+        background-color: rgba(20, 18, 45, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         border-radius: 12px !important;
     }
     /* Menyelaraskan warna area dalam file uploader */
     div[data-testid="stFileUploader"] section {
-        background-color: rgba(30, 27, 75, 0.5) !important;
+        background-color: rgba(20, 18, 45, 0.75) !important;
         border: 1px dashed rgba(255, 255, 255, 0.3) !important;
         border-radius: 12px !important;
     }
