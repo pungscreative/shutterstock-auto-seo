@@ -4,7 +4,7 @@ from PIL import Image
 from google import genai
 
 # Konfigurasi Halaman & Tema Estetik
-st.set_page_config(page_title="Shutterstock Pro Studio", page_icon="✨", layout="wide")
+st.set_page_config(page_title="Nyetok.Kuy", page_icon="✨", layout="wide")
 
 st.markdown("""
 <style>
