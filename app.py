@@ -8,7 +8,7 @@ from google import genai
 # Konfigurasi Halaman
 st.set_page_config(page_title="Nyetok.Kuy Pro | AI SEO Metadata", page_icon="✨", layout="wide")
 
-# CSS Styling - Dark Mode Gradient, Dark Glassmorphism & Kontainer Kaca Pekat Kontras Tinggi
+# CSS Styling - Dark Mode Gradient & Symmetrical Glassmorphism Cards
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -56,18 +56,7 @@ st.markdown("""
         margin-bottom: 5px;
     }
 
-    /* Kolom Utama */
-    [data-testid="column"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        border-radius: 20px !important;
-        padding: 25px !important;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
-    }
-
-    /* Judul Kolom */
+    /* Judul Kartu */
     .card-title {
         font-family: 'Fredoka', sans-serif;
         font-weight: 600;
@@ -76,7 +65,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Kontainer Kaca Transparan Pekat di Sebelah Kanan */
+    /* Kontainer Kaca Transparan Pekat yang Simetris untuk Kiri & Kanan */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(20, 15, 35, 0.85) !important;
         background-color: rgba(20, 15, 35, 0.85) !important;
@@ -139,29 +128,31 @@ st.markdown("""
 
 col1, col2 = st.columns(2, gap="large")
 
+# Kolom Kiri: Konfigurasi & Upload (Dibungkus Kontainer Symmetrical)
 with col1:
-    st.markdown('<div class="card-title">⚙️ Konfigurasi & Upload</div>', unsafe_allow_html=True)
-    
-    api_key = None
-    try:
-        if "GEMINI_API_KEY" in st.secrets:
-            api_key = st.secrets["GEMINI_API_KEY"]
-    except Exception:
-        pass
-        
-    if not api_key:
-        api_key = st.text_input("🔑 Masukkan Gemini API Key", type="password")
-    
-    uploaded_file = st.file_uploader("📁 Drag & Drop atau Klik untuk Upload Foto Produk (Max 200MB)", type=["jpg", "jpeg", "png"])
-    
-    if uploaded_file:
-        st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
-
-with col2:
-    st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
-    
-    # Kontainer Pembungkus Kaca Pekat
     with st.container(border=True):
+        st.markdown('<div class="card-title">⚙️ Konfigurasi & Upload</div>', unsafe_allow_html=True)
+        
+        api_key = None
+        try:
+            if "GEMINI_API_KEY" in st.secrets:
+                api_key = st.secrets["GEMINI_API_KEY"]
+        except Exception:
+            pass
+            
+        if not api_key:
+            api_key = st.text_input("🔑 Masukkan Gemini API Key", type="password")
+        
+        uploaded_file = st.file_uploader("📁 Drag & Drop atau Klik untuk Upload Foto Produk (Max 200MB)", type=["jpg", "jpeg", "png"])
+        
+        if uploaded_file:
+            st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
+
+# Kolom Kanan: Hasil Pemrosesan AI (Dibungkus Kontainer Symmetrical)
+with col2:
+    with st.container(border=True):
+        st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
+        
         if uploaded_file and api_key:
             if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
                 with st.spinner("✨ Server sedang sibuk, sistem mencoba menghubungkan ulang secara otomatis..."):
@@ -187,7 +178,7 @@ with col2:
                                 model='gemini-3.5-flash',
                                 contents=[prompt, img]
                             )
-                            break # Berhasil keluar dari loop jika sukses
+                            break
                         except Exception as e:
                             err_str = str(e)
                             if ("503" in err_str or "UNAVAILABLE" in err_str) and attempt < max_retries - 1:
@@ -202,7 +193,6 @@ with col2:
                     
                     if response and hasattr(response, 'text'):
                         try:
-                            # Parsing respons AI yang bersih dari simbol markdown & keyword kosong
                             data_dict = {}
                             for line in response.text.split('\n'):
                                 if ':' in line:
@@ -214,14 +204,12 @@ with col2:
                             desc = data_dict.get('DESCRIPTION', data_dict.get('TITLE', 'Stock Image'))
                             desc = re.sub(r'[\*]', '', desc)
                             
-                            # Ekstraksi keyword dengan pembersihan total dari simbol asterisks/bold markdown
                             raw_keywords = data_dict.get('KEYWORDS', data_dict.get('KEYWORD', ''))
                             if not raw_keywords:
                                 for line in response.text.split('\n'):
                                     if 'keyword' in line.lower() and ':' in line:
                                         raw_keywords = line.split(':', 1)[1].strip().replace('[', '').replace(']', '')
                                         
-                            # Bersihkan semua simbol bintang dan markdown yang tersisa
                             raw_keywords = raw_keywords.replace('**', '').replace('*', '')
                             keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
                             final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
@@ -239,7 +227,6 @@ with col2:
                         except Exception as parse_err:
                             st.error(f"Gagal memproses data dari AI: {parse_err}")
             
-            # Tampilkan hasil jika sudah digenerate untuk file ini
             if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
                 st.success("🎉 Metadata berhasil disusun!")
                 st.dataframe(st.session_state.df_result, use_container_width=True)
