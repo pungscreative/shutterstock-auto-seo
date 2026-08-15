@@ -111,11 +111,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Inisialisasi Session State untuk Hasil AI
+# Inisialisasi Session State untuk Hasil AI Multi-File
 if "df_result" not in st.session_state:
     st.session_state.df_result = None
-if "filename_result" not in st.session_state:
-    st.session_state.filename_result = None
 
 # Header Utama dengan Badge
 st.markdown("""
@@ -128,10 +126,10 @@ st.markdown("""
 
 col1, col2 = st.columns(2, gap="large")
 
-# Kolom Kiri: Konfigurasi & Upload (Dibungkus Kontainer Symmetrical)
+# Kolom Kiri: Konfigurasi & Multi-Upload
 with col1:
     with st.container(border=True):
-        st.markdown('<div class="card-title">⚙️ Konfigurasi & Upload</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">⚙️ Konfigurasi & Multi-Upload</div>', unsafe_allow_html=True)
         
         api_key = None
         try:
@@ -143,22 +141,39 @@ with col1:
         if not api_key:
             api_key = st.text_input("🔑 Masukkan Gemini API Key", type="password")
         
-        uploaded_file = st.file_uploader("📁 Drag & Drop atau Klik untuk Upload Foto Produk (Max 200MB)", type=["jpg", "jpeg", "png"])
+        # Aktifkan accept_multiple_files=True
+        uploaded_files = st.file_uploader(
+            "📁 Drag & Drop atau Klik untuk Upload Banyak Foto (Max 200MB/file)", 
+            type=["jpg", "jpeg", "png"], 
+            accept_multiple_files=True
+        )
         
-        if uploaded_file:
-            st.image(uploaded_file, caption="Pratinjau Foto", use_container_width=True)
+        if uploaded_files:
+            st.success(f"✅ {len(uploaded_files)} foto berhasil dipilih.")
+            with st.expander("🔍 Pratinjau Foto yang Diunggah"):
+                for uploaded_file in uploaded_files:
+                    st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
 
-# Kolom Kanan: Hasil Pemrosesan AI (Dibungkus Kontainer Symmetrical)
+# Kolom Kanan: Hasil Pemrosesan AI Massal
 with col2:
     with st.container(border=True):
-        st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">📊 Hasil Pemrosesan AI Massal</div>', unsafe_allow_html=True)
         
-        if uploaded_file and api_key:
-            if st.button("🚀 Generate Metadata SEO", type="primary", use_container_width=True):
-                with st.spinner("✨ Server sedang sibuk, sistem mencoba menghubungkan ulang secara otomatis..."):
+        if uploaded_files and api_key:
+            if st.button("🚀 Generate Semua Metadata SEO", type="primary", use_container_width=True):
+                all_rows = []
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                total_files = len(uploaded_files)
+                success_count = 0
+                
+                for idx, uploaded_file in enumerate(uploaded_files):
+                    status_text.text(f"✨ Memproses foto {idx+1} dari {total_files}: {uploaded_file.name}...")
+                    
                     response = None
                     max_retries = 3
-                    retry_delay = 3
+                    retry_delay = 2
                     
                     for attempt in range(max_retries):
                         try:
@@ -185,10 +200,6 @@ with col2:
                                 time.sleep(retry_delay)
                                 continue
                             else:
-                                if attempt == max_retries - 1:
-                                    st.error(f"Gagal setelah {max_retries} kali percobaan karena server padat: {err_str}")
-                                else:
-                                    st.error(f"Terjadi kesalahan pada sistem AI: {err_str}")
                                 break
                     
                     if response and hasattr(response, 'text'):
@@ -214,38 +225,49 @@ with col2:
                             keyword_list = [k.strip() for k in raw_keywords.split(',') if k.strip()]
                             final_keywords = ', '.join(keyword_list[:50]) if keyword_list else "stock photography, commercial photo, professional image, high quality"
                             
-                            st.session_state.df_result = pd.DataFrame({
-                                "Filename": [uploaded_file.name],
-                                "Description": [desc],
-                                "Keywords": [final_keywords],
-                                "Categories": [data_dict.get('CATEGORY', 'Animals/Wildlife')],
-                                "Illustration": ["No"],
-                                "Mature Content": ["No"],
-                                "Editorial": ["No"]
+                            all_rows.append({
+                                "Filename": uploaded_file.name,
+                                "Description": desc,
+                                "Keywords": final_keywords,
+                                "Categories": data_dict.get('CATEGORY', 'Animals/Wildlife'),
+                                "Illustration": "No",
+                                "Mature Content": "No",
+                                "Editorial": "No"
                             })
-                            st.session_state.filename_result = uploaded_file.name
-                        except Exception as parse_err:
-                            st.error(f"Gagal memproses data dari AI: {parse_err}")
+                            success_count += 1
+                        except Exception:
+                            pass
+                    
+                    progress_bar.progress((idx + 1) / total_files)
+                    
+                status_text.empty()
+                progress_bar.empty()
+                
+                if all_rows:
+                    st.session_state.df_result = pd.DataFrame(all_rows)
+                    st.success(f"🎉 Berhasil memproses {success_count} dari {total_files} foto!")
+                else:
+                    st.error("Gagal memproses kumpulan foto. Periksa kembali API Key atau koneksi Anda.")
             
-            if st.session_state.df_result is not None and st.session_state.filename_result == uploaded_file.name:
-                st.success("🎉 Metadata berhasil disusun!")
+            # Tampilkan tabel hasil jika sudah ada
+            if st.session_state.df_result is not None:
                 st.dataframe(st.session_state.df_result, use_container_width=True)
                 
                 csv = st.session_state.df_result.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 Download CSV Siap Upload", 
+                    label="📥 Download CSV Massal Siap Upload", 
                     data=csv, 
-                    file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_metadata.csv", 
+                    file_name="nyetok_kuy_bulk_metadata.csv", 
                     mime="text/csv",
                     use_container_width=True
                 )
         else:
             st.markdown("""
             <div style="text-align: center; padding: 10px;">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">⚡ Silakan unggah foto terlebih dahulu di kolom sebelah kiri untuk mengaktifkan mesin AI.</p>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">⚡ Silakan unggah beberapa foto di kolom sebelah kiri untuk mengaktifkan mesin AI massal.</p>
             </div>
             """, unsafe_allow_html=True)
-            st.button("🚀 Generate Metadata SEO", disabled=True, use_container_width=True)
+            st.button("🚀 Generate Semua Metadata SEO", disabled=True, use_container_width=True)
 
 # Footer
 st.markdown("---")
